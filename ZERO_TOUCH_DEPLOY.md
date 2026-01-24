@@ -159,6 +159,7 @@ Custom script extension ile `deploy-zero-touch.sh` indirilip `sudo sh` ile çal�
 | `Cannot connect to Docker daemon` | Docker kapalı | `sudo systemctl start docker` |
 | Port 9080 kullanımda | Çakışma | `chirpstack.yaml`’da portu değiştirin (örn. 9081:80). |
 | `chirpstack-prebuilt.yaml: no such file` | Eski klon / branch diverge | `cd .../beaver-iot-docker && git fetch origin main && git checkout main && git reset --hard origin/main` sonra script'i tekrar çalıştırın. |
+| Alarm/Map/Device List widget’ları yok (sunucuda) | Eski image | 1) Actions → "Build and push prebuilt image" → Run workflow. 2) Zero-touch’u tekrar çalıştırın (script artık pull yapıyor). |
 
 ---
 

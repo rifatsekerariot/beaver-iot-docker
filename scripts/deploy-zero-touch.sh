@@ -220,6 +220,10 @@ else
 fi
 echo "[zero-touch] Starting Beaver IoT + ChirpStack stack (image: $BEAVER_IMAGE, compose: $COMPOSE_FILE)..."
 cd "$WORKSPACE/beaver-iot-docker/examples"
+if [ -z "$BUILD_IMAGES" ]; then
+  echo "[zero-touch] Pulling latest prebuilt image (ensure Alarm/Map/Device List widgets)..."
+  $COMPOSE_CMD -f "$COMPOSE_FILE" pull
+fi
 $COMPOSE_CMD -f "$COMPOSE_FILE" up -d
 
 # --- Summary ---
