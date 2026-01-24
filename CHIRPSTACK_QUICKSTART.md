@@ -28,10 +28,20 @@ docker compose -f chirpstack.yaml logs -f
 
 ```powershell
 cd c:\Projeler\beaver-iot-docker\scripts
-.\test-webhook.ps1 -BaseUrl "http://localhost:8080" -TenantId "default"
+.\test-webhook.ps1 -BaseUrl "http://localhost:9080" -TenantId "default"
 ```
 
-## 3. Log kontrolü
+## 3. Zero touch (Linux sunucuda tek komut)
+
+**Sadece Linux.** Tek komutla kurulum:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/rifatsekerariot/beaver-iot-docker/main/scripts/deploy-zero-touch.sh | sudo sh -s -- --tenant-id "default"
+```
+
+Ayrıntılar: **[ZERO_TOUCH_DEPLOY.md](ZERO_TOUCH_DEPLOY.md)**.
+
+## 4. Log kontrolü
 
 ```powershell
 docker compose -f chirpstack.yaml logs monolith
@@ -41,4 +51,5 @@ docker compose -f chirpstack.yaml logs monolith
 
 ---
 
-Detaylı adımlar: **beaver** projesinde `RUNBOOK_CHIRPSTACK_DOCKER.md` ve `TEST_PLAN_CHIRPSTACK.md`.
+Detaylı adımlar: **beaver** projesinde `RUNBOOK_CHIRPSTACK_DOCKER.md` ve `TEST_PLAN_CHIRPSTACK.md`.  
+**Zero touch:** `ZERO_TOUCH_DEPLOY.md`.
