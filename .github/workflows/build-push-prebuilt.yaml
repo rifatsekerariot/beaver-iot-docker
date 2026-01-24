@@ -49,6 +49,11 @@ jobs:
       - name: Create .env for build
         run: sh scripts/create-build-env.sh
 
+      - name: Clone beaver-iot-web (main, COPY like local)
+        env:
+          WEB_GIT_REPO_URL: "https://github.com/rifatsekerariot/beaver-iot-web.git"
+        run: sh scripts/ci-clone-web.sh
+
       - name: "Build api, web, monolith (order matters: web before monolith)"
         run: sh scripts/build-prebuilt.sh
 

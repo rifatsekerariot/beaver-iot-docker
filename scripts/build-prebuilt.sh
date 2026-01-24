@@ -1,9 +1,12 @@
 #!/bin/sh
-# Build api, web, monolith in order (CI).
-# Run from repo root. Expects build-docker/.env.
+# Build web (COPY, like local) then api, monolith (CI).
+# Run from repo root. Expects build-docker/.env, build-docker/beaver-iot-web/ (ci-clone-web).
 
 set -e
-cd "$(dirname "$0")/../build-docker"
-docker compose build --no-cache api
-docker compose build --no-cache web
-docker compose build --no-cache monolith
+BD="$(dirname "$0")/../build-docker"
+cd "$BD"
+
+# 1. Web from build-docker/beaver-iot-web (COPY, same as local) – not git-in-container
+docker build --network=host -f beaver-iot-web-ci.dockerfile -t milesight/beaver-iot-web:latest .
+# 2. Api, monolith (compose); monolith uses BASE_WEB_IMAGE=milesight/beaver-iot-web:latest
+docker compose build --no-cache api monolith

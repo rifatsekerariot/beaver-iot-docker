@@ -41,9 +41,10 @@ if ($SkipComposeUp) {
     exit 0
 }
 
-# 4. Compose up (ChirpStack)
+# 4. Compose up (ChirpStack) – use locally built monolith
 Write-Host "[run-with-local-web] 4. Starting ChirpStack compose..." -ForegroundColor Yellow
 if (-not $env:CHIRPSTACK_DEFAULT_TENANT_ID) { $env:CHIRPSTACK_DEFAULT_TENANT_ID = "default" }
+$env:BEAVER_IMAGE = "milesight/beaver-iot:latest"
 $ExamplesDir = Join-Path $DockerRoot "examples"
 Push-Location $ExamplesDir
 try {
