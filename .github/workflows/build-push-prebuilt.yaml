@@ -58,6 +58,9 @@ jobs:
           CI_CLONE_WEB_DEST: "beaver-iot-web"
         run: sh beaver-iot-docker/scripts/ci-clone-web.sh
 
+      - name: Verify web source (our repo, widget fixes present)
+        run: sh beaver-iot-docker/scripts/verify-web-source.sh beaver-iot-web
+
       - name: Build web + api + monolith (local dockerfile, root context)
         run: sh beaver-iot-docker/scripts/build-prebuilt.sh
 

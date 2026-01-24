@@ -9,8 +9,8 @@ ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 BD="$ROOT/beaver-iot-docker/build-docker"
 
 cd "$ROOT"
-# 1. Web – exact same as local: beaver-iot-web-local.dockerfile, context = workspace root
-docker build --network=host \
+# 1. Web – exact same as local: beaver-iot-web-local.dockerfile, context = workspace root (our clone)
+docker build --no-cache --network=host \
   -f beaver-iot-docker/build-docker/beaver-iot-web-local.dockerfile \
   -t milesight/beaver-iot-web:latest .
 
