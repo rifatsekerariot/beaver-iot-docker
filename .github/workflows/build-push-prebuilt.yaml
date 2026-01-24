@@ -1,7 +1,7 @@
 # Build and push pre-built Beaver IoT image (widget + ChirpStack-ready) to GHCR.
+# Matches LOCAL build: same layout (beaver-iot-web + beaver-iot-docker), beaver-iot-web-local.dockerfile.
 # Used by zero-touch default: pull this image, no build on server.
-# Web: rifatsekerariot/beaver-iot-web main (components.ts = Alarm/Map/Device List).
-# Run workflow_dispatch after beaver-iot-web widget fixes to refresh image.
+
 name: Build and push prebuilt image
 
 on:
@@ -31,8 +31,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Restructure workspace (match local layout)
+        run: sh scripts/restructure-ci-workspace.sh
+
       - name: Clone integrations and build ChirpStack JAR
-        run: sh scripts/ci-build-jar.sh
+        run: cd beaver-iot-docker && sh scripts/ci-build-jar.sh
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -47,19 +50,19 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create .env for build
-        run: sh scripts/create-build-env.sh
+        run: sh beaver-iot-docker/scripts/create-build-env.sh
 
-      - name: Clone beaver-iot-web (main, COPY like local)
+      - name: Clone beaver-iot-web (sibling of beaver-iot-docker, same as local)
         env:
           WEB_GIT_REPO_URL: "https://github.com/rifatsekerariot/beaver-iot-web.git"
-        run: sh scripts/ci-clone-web.sh
+          CI_CLONE_WEB_DEST: "beaver-iot-web"
+        run: sh beaver-iot-docker/scripts/ci-clone-web.sh
 
-      - name: "Build api, web, monolith (order matters: web before monolith)"
-        run: sh scripts/build-prebuilt.sh
+      - name: Build web + api + monolith (local dockerfile, root context)
+        run: sh beaver-iot-docker/scripts/build-prebuilt.sh
 
-      - name: Verify web image (our build, not upstream)
-        run: sh scripts/verify-web-image.sh
+      - name: Verify web image
+        run: sh beaver-iot-docker/scripts/verify-web-image.sh
 
       - name: Tag and push monolith to GHCR
-        run: sh scripts/tag-push-ghcr.sh
-
+        run: sh beaver-iot-docker/scripts/tag-push-ghcr.sh
