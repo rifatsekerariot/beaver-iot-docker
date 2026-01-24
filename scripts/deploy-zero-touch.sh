@@ -1,17 +1,23 @@
 #!/bin/sh
 # Zero-touch deploy: Beaver IoT + ChirpStack v4 on a Linux server.
 # Linux only. Usage:
-#   curl -sSL https://raw.githubusercontent.com/rifatsekerariot/beaver-iot-docker/main/scripts/deploy-zero-touch.sh | sudo sh -s -- [--tenant-id ID] [--workspace DIR] [--skip-docker-install]
+#   curl -sSL https://raw.githubusercontent.com/rifatsekerariot/beaver-iot-docker/main/scripts/deploy-zero-touch.sh | sudo sh -s -- [--tenant-id ID] [--workspace DIR] [--skip-docker-install] [--build-images] [--web-repo URL] [--web-branch BRANCH]
 #   ./deploy-zero-touch.sh [options]
+#
+# --build-images: Build api/web/monolith from source (WEB from your fork). Use for live-server
+#   testing with Alarm/Map/DeviceList widgets. Omitting uses pre-built milesight/beaver-iot (pull).
 
 set -e
 
 REPO_INTEGRATIONS="${REPO_INTEGRATIONS:-https://github.com/rifatsekerariot/beaver-iot-integrations.git}"
 REPO_DOCKER="${REPO_DOCKER:-https://github.com/rifatsekerariot/beaver-iot-docker.git}"
+REPO_WEB="${REPO_WEB:-https://github.com/rifatsekerariot/beaver-iot-web.git}"
+REPO_WEB_BRANCH="${REPO_WEB_BRANCH:-origin/main}"
 MAVEN_IMAGE="${MAVEN_IMAGE:-maven:3.8-eclipse-temurin-17-alpine}"
 WORKSPACE="${WORKSPACE:-/opt/beaver-chirpstack}"
 TENANT_ID=""
 SKIP_DOCKER_INSTALL=""
+BUILD_IMAGES=""
 
 # POSIX-friendly option parsing
 while [ $# -gt 0 ]; do
@@ -36,6 +42,26 @@ while [ $# -gt 0 ]; do
       SKIP_DOCKER_INSTALL=1
       shift
       ;;
+    --build-images)
+      BUILD_IMAGES=1
+      shift
+      ;;
+    --web-repo)
+      if [ $# -lt 2 ]; then
+        echo "[zero-touch] --web-repo requires a value"
+        exit 1
+      fi
+      REPO_WEB="$2"
+      shift 2
+      ;;
+    --web-branch)
+      if [ $# -lt 2 ]; then
+        echo "[zero-touch] --web-branch requires a value"
+        exit 1
+      fi
+      REPO_WEB_BRANCH="$2"
+      shift 2
+      ;;
     *)
       echo "[zero-touch] Unknown option: $1"
       exit 1
@@ -49,6 +75,11 @@ export CHIRPSTACK_DEFAULT_TENANT_ID="${TENANT_ID}"
 echo "[zero-touch] Linux zero-touch deploy: Beaver IoT + ChirpStack v4"
 echo "[zero-touch] Workspace: $WORKSPACE"
 echo "[zero-touch] Tenant ID:  ${TENANT_ID:-<not set>}"
+if [ -n "$BUILD_IMAGES" ]; then
+  echo "[zero-touch] Build images: yes (web=$REPO_WEB $REPO_WEB_BRANCH)"
+else
+  echo "[zero-touch] Build images: no (will use/pull milesight/beaver-iot:latest)"
+fi
 
 # --- Docker ---
 install_docker() {
@@ -72,6 +103,17 @@ else
     echo "[zero-touch] Docker not found. Run without --skip-docker-install to install."
     exit 1
   fi
+fi
+
+# --- Docker Compose ---
+COMPOSE_CMD=""
+if docker compose version >/dev/null 2>&1; then
+  COMPOSE_CMD="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
+  COMPOSE_CMD="docker-compose"
+else
+  echo "[zero-touch] ERROR: docker compose or docker-compose not found. Install Docker Compose and re-run."
+  exit 1
 fi
 
 # --- Git ---
@@ -132,17 +174,27 @@ mkdir -p "$TARGET_DIR"
 cp -f "$JAR" "$TARGET_DIR/"
 echo "[zero-touch] Copied JAR to $TARGET_DIR"
 
-# --- Compose up ---
-COMPOSE_CMD=""
-if docker compose version >/dev/null 2>&1; then
-  COMPOSE_CMD="docker compose"
-elif command -v docker-compose >/dev/null 2>&1; then
-  COMPOSE_CMD="docker-compose"
-else
-  echo "[zero-touch] ERROR: docker compose or docker-compose not found. Install Docker Compose and re-run."
-  exit 1
+# --- Optional: Build Docker images (api, web, monolith) ---
+if [ -n "$BUILD_IMAGES" ]; then
+  echo "[zero-touch] Building Docker images (api, web, monolith)... This may take 15-25 minutes."
+  BD="$WORKSPACE/beaver-iot-docker/build-docker"
+  if [ ! -d "$BD" ] || [ ! -f "$BD/docker-compose.yaml" ]; then
+    echo "[zero-touch] ERROR: build-docker not found at $BD"
+    exit 1
+  fi
+  export WEB_GIT_REPO_URL="$REPO_WEB"
+  export WEB_GIT_BRANCH="$REPO_WEB_BRANCH"
+  # API remains default (Milesight) unless overridden via env
+  cd "$BD"
+  if ! $COMPOSE_CMD build --no-cache api web monolith; then
+    echo "[zero-touch] ERROR: Docker image build failed. Check logs above."
+    exit 1
+  fi
+  cd "$WORKSPACE"
+  echo "[zero-touch] Docker images built successfully."
 fi
 
+# --- Compose up ---
 echo "[zero-touch] Starting Beaver IoT + ChirpStack stack..."
 cd "$WORKSPACE/beaver-iot-docker/examples"
 $COMPOSE_CMD -f chirpstack.yaml up -d

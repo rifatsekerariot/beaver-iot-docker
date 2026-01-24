@@ -69,6 +69,14 @@ sudo sh /tmp/deploy-zero-touch.sh --tenant-id "default"
 sudo WORKSPACE=/opt/beaver-chirpstack sh /tmp/deploy-zero-touch.sh --tenant-id "default"
 ```
 
+**Canlı sunucuda kendi fork'larınızla test (Alarm/Map/DeviceList widget'ları dahil):**
+
+```bash
+curl -sSL https://raw.githubusercontent.com/rifatsekerariot/beaver-iot-docker/main/scripts/deploy-zero-touch.sh | sudo sh -s -- --tenant-id "default" --build-images
+```
+
+Bu komut api/web/monolith'ı build eder (WEB = rifatsekerariot/beaver-iot-web). **15–25 dakika** sürebilir. Tek komut, zero touch; kurulum sonrası UI `http://<sunucu>:9080` üzerinden erişilir.
+
 ---
 
 ## Script ne yapar?
@@ -81,8 +89,9 @@ sudo WORKSPACE=/opt/beaver-chirpstack sh /tmp/deploy-zero-touch.sh --tenant-id "
    - `beaver-iot-docker` (rifatsekerariot)
 5. **ChirpStack JAR** build: `docker run` ile Maven.
 6. JAR’ı `examples/target/chirpstack/integrations/` altına kopyalar.
-7. **`chirpstack.yaml`** ile `docker compose up -d` çalıştırır.
-8. **`CHIRPSTACK_DEFAULT_TENANT_ID`**: `--tenant-id` ile verdiğiniz değer ortam değişkeni olarak compose’a geçer.
+7. **İsteğe bağlı:** `--build-images` ile api/web/monolith build (WEB = rifatsekerariot/beaver-iot-web; Alarm/Map/DeviceList dahil). Varsayılan kapalı; `milesight/beaver-iot:latest` pull.
+8. **`chirpstack.yaml`** ile `docker compose up -d` çalıştırır.
+9. **`CHIRPSTACK_DEFAULT_TENANT_ID`**: `--tenant-id` ile verdiğiniz değer ortam değişkeni olarak compose’a geçer.
 
 ---
 
@@ -93,6 +102,9 @@ sudo WORKSPACE=/opt/beaver-chirpstack sh /tmp/deploy-zero-touch.sh --tenant-id "
 | `--tenant-id "default"` | Beaver tenant ID (ChirpStack webhook için). |
 | `--workspace /opt/beaver` | Klonlama ve compose’un çalışacağı dizin. |
 | `--skip-docker-install` | Docker kurma; zaten kuruluysa kullan. |
+| `--build-images` | api/web/monolith'ı kaynaktan build et (WEB = fork). **Canlı sunucu test** için kullanın; 15–25 dk sürebilir. Varsayılan: kapalı. |
+| `--web-repo URL` | Web repo URL (`--build-images` ile). Varsayılan: rifatsekerariot/beaver-iot-web. |
+| `--web-branch BRANCH` | Web branch (`--build-images` ile). Varsayılan: `origin/main`. |
 
 **Ortam değişkenleri:**
 
@@ -101,6 +113,8 @@ sudo WORKSPACE=/opt/beaver-chirpstack sh /tmp/deploy-zero-touch.sh --tenant-id "
 | `WORKSPACE` | Workspace dizini (`--workspace` öncelikli). |
 | `REPO_INTEGRATIONS` | integrations repo URL (opsiyonel). |
 | `REPO_DOCKER` | docker repo URL (opsiyonel). |
+| `REPO_WEB` | Web repo URL (`--build-images` ile; varsayılan: rifatsekerariot/beaver-iot-web). |
+| `REPO_WEB_BRANCH` | Web branch (`--build-images` ile; varsayılan: `origin/main`). |
 
 ---
 
@@ -149,7 +163,8 @@ Custom script extension ile `deploy-zero-touch.sh` indirilip `sudo sh` ile çal�
 
 ## Özet
 
-- **Linux sunucuda** tek komut:  
+- **Canlı sunucu test (widget'lı):** `curl -sSL .../deploy-zero-touch.sh | sudo sh -s -- --tenant-id "default" --build-images`
+- **Linux sunucuda** tek komut (varsayılan, pull):  
   `curl -sSL .../deploy-zero-touch.sh | sudo sh -s -- --tenant-id "default"`
 - Docker ve gerekirse Git script ile kurulur, repolar klonlanır, JAR build edilir, compose ayağa kalkar.
 - **Sadece Linux** kullanılır; Windows için bu zero-touch dağıtım **yoktur**.

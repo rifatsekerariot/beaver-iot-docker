@@ -136,3 +136,4 @@ nb-configuration.xml
 ## Docker
 ##############################
 .env
+api-build.log

@@ -1,0 +1,14 @@
+# Copy to workspace root as .dockerignore when using beaver-iot-web-local.dockerfile.
+# Context = workspace (e.g. c:\Projeler). Include only what we need.
+
+*
+!beaver-iot-web
+!beaver-iot-docker
+
+# Shrink context: exclude heavy dirs inside included trees
+beaver-iot-web/node_modules
+beaver-iot-web/**/node_modules
+beaver-iot-web/.git
+beaver-iot-web/apps/web/dist
+beaver-iot-docker/.git
+beaver-iot-docker/**/node_modules
