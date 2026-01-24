@@ -83,7 +83,7 @@ jobs:
 
       - name: Verify web image (our build, not upstream)
         run: |
-          docker run --rm milesight/beaver-iot-web:latest sh -c "test -f /web/index.html && test -d /web/assets && ls /web/assets/*.js 2>/dev/null | head -1"
+          docker run --rm milesight/beaver-iot-web:latest sh -c "test -f /web/index.html && test -d /web/assets"
           echo "OK: web image has index.html and assets"
 
       - name: Tag and push monolith to GHCR
