@@ -8,12 +8,19 @@ docker run --rm --entrypoint sh ghcr.io/rifatsekerariot/beaver-iot:latest -c "ls
 ```
 **Boş** dönüyor → GHCR’daki imaj **Alarm/Map** widget chunk’larını **içermiyor**.
 
-## Kök neden
+## Kök neden (job-logs ile doğrulandı)
 
-**Workflow hiç yeşil bitmemiş** (veya yanlış build) → **yeni** imaj **push edilmemiş** → sunucu **eski** GHCR imajını çekiyor.
+**job-logs.txt** (son CI logları) analizi:
 
-- **Verify web image** adımı Alarm/Map chunk’larını kontrol ediyor; **eksikse** CI **fail** ediyor, **push** yapılmıyor.
-- Yani **başarılı** push = imajda Alarm/Map **var** demek. **Grep boş** = **hiç** başarılı push **olmamış** (veya çok eski bir push kullanılıyor).
+- **Web** `docker build` ile **docker** (host) driver’da build ediliyor → imaj host’ta, Alarm/Map **var**.
+- **Api + monolith** `docker compose build` ile **buildx** (docker-container) kullanıyor. Buildx host’taki imajı **görmez**.
+- Monolith **FROM milesight/beaver-iot-web:latest** kullanıyor; buildx bu referansı **Docker Hub**’dan çözüyor → **upstream** Milesight web (Alarm/Map **yok**).
+- **Verify web image** host’taki **bizim** web’e bakıyor → Alarm/Map var → **geçiyor**.
+- **Push** edilen monolith ise **upstream** web ile build edildiği için Alarm/Map **yok**.
+
+Ayrıntı: **JOB_LOGS_KOK_NEDEN.md**.
+
+**Uygulanan çözüm:** Web’i build ettikten sonra **GHCR**’a push ediyoruz (`ghcr.io/rifatsekerariot/beaver-iot-web:latest`). Compose build’den önce **BASE_WEB_IMAGE** bu imaja ayarlanıyor; monolith artık **bizim** web’i kullanıyor.
 
 ## Yapılacaklar
 

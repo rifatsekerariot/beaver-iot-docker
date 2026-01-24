@@ -39,6 +39,6 @@ services:
         - "WEB_GIT_REPO_URL=${WEB_GIT_REPO_URL:-}"
         - "WEB_GIT_BRANCH=${WEB_GIT_BRANCH:-origin/main}"
         - "BASE_API_IMAGE=${DOCKER_REPO:-milesight}/beaver-iot-api:${PRODUCTION_TAG:-latest}"
-        - "BASE_WEB_IMAGE=${DOCKER_REPO:-milesight}/beaver-iot-web:${PRODUCTION_TAG:-latest}"
+        - "BASE_WEB_IMAGE=${BASE_WEB_IMAGE:-${DOCKER_REPO:-milesight}/beaver-iot-web:${PRODUCTION_TAG:-latest}}"
       tags:
         - "${DOCKER_REPO:-milesight}/monolith:${PRODUCTION_TAG:-latest}"
