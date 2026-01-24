@@ -64,6 +64,13 @@ jobs:
       - name: Build web + api + monolith (local dockerfile, root context)
         run: sh beaver-iot-docker/scripts/build-prebuilt.sh
 
+      - name: Log web image widget chunks (diagnostic)
+        run: |
+          echo "=== Web image /web/assets/js (first 60) ==="
+          docker run --rm --entrypoint sh milesight/beaver-iot-web:latest -c "ls /web/assets/js | head -60"
+          echo "=== Alarm/Map chunks ==="
+          docker run --rm --entrypoint sh milesight/beaver-iot-web:latest -c "ls /web/assets/js | grep -E '^Alarm-|^Map-' || true"
+
       - name: Verify web image
         run: sh beaver-iot-docker/scripts/verify-web-image.sh
 

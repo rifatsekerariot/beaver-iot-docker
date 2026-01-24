@@ -159,7 +159,8 @@ Custom script extension ile `deploy-zero-touch.sh` indirilip `sudo sh` ile çal�
 | `Cannot connect to Docker daemon` | Docker kapalı | `sudo systemctl start docker` |
 | Port 9080 kullanımda | Çakışma | `chirpstack.yaml`’da portu değiştirin (örn. 9081:80). |
 | `chirpstack-prebuilt.yaml: no such file` | Eski klon / branch diverge | `cd .../beaver-iot-docker && git fetch origin main && git checkout main && git reset --hard origin/main` sonra script'i tekrar çalıştırın. |
-| Alarm/Map/Device List widget’ları yok (sunucuda) | Eski image veya CI’da web monolith’tan önce build edilmedi | Workflow artık **api → web → monolith** sırasıyla build ediyor. 1) Actions → "Build and push prebuilt image" → Run workflow. 2) Zero-touch’u tekrar çalıştırın (pull + up). |
+| Alarm/Map/Device List widget’ları yok (sunucuda) | GHCR imajı eski; workflow hiç yeşil bitmemiş veya yanlış build | 1) **beaver-iot-docker** → Actions → "Build and push prebuilt image" → **Run workflow** (manuel). 2) **Tüm** adımların **yeşil** geçmesini sağlayın. 3) Başarısız adım varsa (örn. Verify web image "missing Alarm-*.js") **beaver-iot-web** main’de components.ts + useFilterPlugins fix’lerini kontrol edin. 4) Workflow **yeşil** olduktan sonra sunucuda zero-touch’u **tekrar** çalıştırın. 5) Doğrulama: `docker run --rm --entrypoint sh ghcr.io/rifatsekerariot/beaver-iot:latest -c "ls /web/assets/js | grep -E '^Alarm-|^Map-'"` → Alarm-*.js ve Map-*.js çıkmalı. |
+| Sunucuda `grep -E '^Alarm-|^Map-'` boş | GHCR imajı Alarm/Map içermiyor; workflow hiç başarılı push yapmamış | Yukarıdaki "Alarm/Map/Device List widget’ları yok" maddesindeki adımları uygulayın. |
 | `/api/v1/user/status` 502 Bad Gateway | API henüz ayağa kalkmadı | Yeni image Java önce, sonra nginx kullanıyor. Workflow’u çalıştırıp güncel image’ı pull edin; 502 düzelir. |
 
 ---
