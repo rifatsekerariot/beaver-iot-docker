@@ -1,5 +1,6 @@
 # Build and push pre-built Beaver IoT image (widget + ChirpStack-ready) to GHCR.
 # Used by zero-touch default: pull this image, no build on server.
+# Widgets: Alarm/Map/Device List via beaver-iot-web components.ts glob fix.
 name: Build and push prebuilt image
 
 on:
