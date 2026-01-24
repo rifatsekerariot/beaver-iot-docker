@@ -5,7 +5,7 @@
 #   ./deploy-zero-touch.sh [options]
 #
 # --build-images: Build api/web/monolith from source (WEB from your fork). Use for live-server
-#   testing with Alarm/Map/DeviceList widgets. Omitting uses pre-built milesight/beaver-iot (pull).
+#   testing with Alarm/Map/DeviceList widgets. Omitting uses prebuilt image (pull); no JAR build.
 
 set -e
 
@@ -80,7 +80,7 @@ echo "[zero-touch] Tenant ID:  ${TENANT_ID:-<not set>}"
 if [ -n "$BUILD_IMAGES" ]; then
   echo "[zero-touch] Build images: yes (api=$REPO_API $REPO_API_BRANCH, web=$REPO_WEB $REPO_WEB_BRANCH)"
 else
-  echo "[zero-touch] Build images: no (will pull prebuilt ghcr.io/rifatsekerariot/beaver-iot:latest)"
+  echo "[zero-touch] Build images: no (pull prebuilt, JAR baked in; no integrations clone or JAR build)"
 fi
 
 # --- Docker ---
@@ -137,15 +137,7 @@ fi
 mkdir -p "$WORKSPACE"
 cd "$WORKSPACE"
 
-# --- Clone ---
-if [ ! -d beaver-iot-integrations ]; then
-  echo "[zero-touch] Cloning beaver-iot-integrations..."
-  git clone --depth 1 -b main "$REPO_INTEGRATIONS" beaver-iot-integrations
-else
-  echo "[zero-touch] Updating beaver-iot-integrations..."
-  (cd beaver-iot-integrations && git fetch origin main 2>/dev/null; git checkout main 2>/dev/null; git pull --depth 1 2>/dev/null || true)
-fi
-
+# --- Clone beaver-iot-docker (always) ---
 if [ ! -d beaver-iot-docker ]; then
   echo "[zero-touch] Cloning beaver-iot-docker..."
   git clone --depth 1 -b main "$REPO_DOCKER" beaver-iot-docker
@@ -154,27 +146,41 @@ else
   (cd beaver-iot-docker && git fetch origin main 2>/dev/null; git checkout main 2>/dev/null; git pull --depth 1 2>/dev/null || true)
 fi
 
-# --- Build ChirpStack JAR ---
-echo "[zero-touch] Building chirpstack-integration JAR (Docker Maven)..."
-docker run --rm \
-  -v "$WORKSPACE/beaver-iot-integrations:/workspace" \
-  -w /workspace \
-  "$MAVEN_IMAGE" \
-  mvn clean package -DskipTests -pl integrations/chirpstack-integration -am -q
+# --- Integrations + JAR only when building images ---
+if [ -n "$BUILD_IMAGES" ]; then
+  if [ ! -d beaver-iot-integrations ]; then
+    echo "[zero-touch] Cloning beaver-iot-integrations..."
+    git clone --depth 1 -b main "$REPO_INTEGRATIONS" beaver-iot-integrations
+  else
+    echo "[zero-touch] Updating beaver-iot-integrations..."
+    (cd beaver-iot-integrations && git fetch origin main 2>/dev/null; git checkout main 2>/dev/null; git pull --depth 1 2>/dev/null || true)
+  fi
 
-JAR_DIR="$WORKSPACE/beaver-iot-integrations/integrations/chirpstack-integration/target"
-JAR=$(find "$JAR_DIR" -maxdepth 1 -name 'chirpstack-integration-*.jar' ! -name '*original*' 2>/dev/null | head -1)
-if [ -z "$JAR" ] || [ ! -f "$JAR" ]; then
-  echo "[zero-touch] ERROR: ChirpStack JAR not found in $JAR_DIR"
-  exit 1
+  echo "[zero-touch] Building chirpstack-integration JAR (Docker Maven)..."
+  docker run --rm \
+    -v "$WORKSPACE/beaver-iot-integrations:/workspace" \
+    -w /workspace \
+    "$MAVEN_IMAGE" \
+    mvn clean package -DskipTests -pl integrations/chirpstack-integration -am -q
+
+  JAR_DIR="$WORKSPACE/beaver-iot-integrations/integrations/chirpstack-integration/target"
+  JAR=$(find "$JAR_DIR" -maxdepth 1 -name 'chirpstack-integration-*.jar' ! -name '*original*' 2>/dev/null | head -1)
+  if [ -z "$JAR" ] || [ ! -f "$JAR" ]; then
+    echo "[zero-touch] ERROR: ChirpStack JAR not found in $JAR_DIR"
+    exit 1
+  fi
+  echo "[zero-touch] Built: $JAR"
+
+  TARGET_DIR="$WORKSPACE/beaver-iot-docker/examples/target/chirpstack/integrations"
+  mkdir -p "$TARGET_DIR"
+  cp -f "$JAR" "$TARGET_DIR/"
+  echo "[zero-touch] Copied JAR to $TARGET_DIR"
+
+  INTEGRATIONS_DIR="$WORKSPACE/beaver-iot-docker/build-docker/integrations"
+  mkdir -p "$INTEGRATIONS_DIR"
+  cp -f "$JAR" "$INTEGRATIONS_DIR/"
+  echo "[zero-touch] Copied JAR to build-docker/integrations (bake into image)"
 fi
-echo "[zero-touch] Built: $JAR"
-
-# --- Copy JAR ---
-TARGET_DIR="$WORKSPACE/beaver-iot-docker/examples/target/chirpstack/integrations"
-mkdir -p "$TARGET_DIR"
-cp -f "$JAR" "$TARGET_DIR/"
-echo "[zero-touch] Copied JAR to $TARGET_DIR"
 
 # --- Optional: Build Docker images (api, web, monolith) ---
 if [ -n "$BUILD_IMAGES" ]; then
@@ -207,12 +213,14 @@ fi
 # --- Compose up ---
 if [ -n "$BUILD_IMAGES" ]; then
   export BEAVER_IMAGE="milesight/beaver-iot:latest"
+  COMPOSE_FILE="chirpstack.yaml"
 else
   export BEAVER_IMAGE="${BEAVER_IMAGE:-ghcr.io/rifatsekerariot/beaver-iot:latest}"
+  COMPOSE_FILE="chirpstack-prebuilt.yaml"
 fi
-echo "[zero-touch] Starting Beaver IoT + ChirpStack stack (image: $BEAVER_IMAGE)..."
+echo "[zero-touch] Starting Beaver IoT + ChirpStack stack (image: $BEAVER_IMAGE, compose: $COMPOSE_FILE)..."
 cd "$WORKSPACE/beaver-iot-docker/examples"
-$COMPOSE_CMD -f chirpstack.yaml up -d
+$COMPOSE_CMD -f "$COMPOSE_FILE" up -d
 
 # --- Summary ---
 SERVER_IP=""

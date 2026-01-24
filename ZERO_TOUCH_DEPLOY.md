@@ -10,9 +10,9 @@ Bu dokümanda, **Beaver IoT + ChirpStack v4 HTTP entegrasyonunu** bir **Linux su
 
 1. Docker yoksa kurulur  
 2. Git yoksa kurulur  
-3. Repolar klonlanır  
-4. ChirpStack JAR build edilir (Docker Maven)  
-5. JAR kopyalanır, **hazır image** (`ghcr.io/rifatsekerariot/beaver-iot:latest`, Alarm/Map/DeviceList widget’lı) pull edilir, `docker compose` ile Beaver + ChirpStack ayağa kalkar  
+3. Yalnızca **beaver-iot-docker** klonlanır (integrations yok, JAR build yok)  
+4. **Hazır image** (`ghcr.io/rifatsekerariot/beaver-iot:latest`; ChirpStack JAR + Alarm/Map/DeviceList widget’lı) pull edilir  
+5. `docker compose -f chirpstack-prebuilt.yaml` ile Beaver + ChirpStack ayağa kalkar  
 
 **Şartlar:** Linux, `sudo`, internet, **9080 / 1883 / 8083** portları boş olmalı.  
 **İlk kullanım:** "Build and push prebuilt image" GitHub Actions workflow’ının en az bir kez çalışmış olması gerekir (repo main’e push veya manuel tetikleme).  
@@ -23,8 +23,8 @@ Windows’ta çalışmaz; WSL veya uzak Linux sunucu kullanın.
 ## Zero touch ne demek?
 
 - Sunucuda **tek `deploy-zero-touch.sh`** çalıştırıyorsunuz.
-- Script: Docker kurulumu (yoksa), Git (yoksa), repo klonlama, ChirpStack JAR build, compose ile **Beaver’ı ayağa kaldırır**.
-- Elle Maven/Java kurmanız gerekmez; build Docker ile yapılır.
+- Script: Docker kurulumu (yoksa), Git (yoksa), **yalnızca beaver-iot-docker** klonlama, hazır image pull, compose ile **Beaver’ı ayağa kaldırır**.
+- Varsayılan modda JAR build yok; ChirpStack JAR image içinde. `--build-images` ile kaynaktan build edebilirsiniz.
 
 ---
 
@@ -85,15 +85,10 @@ Bu komut api/web/monolith'ı build eder (WEB = rifatsekerariot/beaver-iot-web). 
 1. **Docker** yoksa kurar (`get.docker.com`).
 2. **Git** yoksa kurar (apt-get / dnf / yum).
 3. **Workspace** oluşturur: varsayılan **`/opt/beaver-chirpstack`**.
-4. **Klonlar:**  
-   - `beaver-iot-integrations` (rifatsekerariot)  
-   - `beaver-iot-docker` (rifatsekerariot)
-5. **ChirpStack JAR** build: `docker run` ile Maven.
-6. JAR’ı `examples/target/chirpstack/integrations/` altına kopyalar.
-7. **Varsayılan:** Hazır image pull (`ghcr.io/rifatsekerariot/beaver-iot:latest`; widget’lı). Sunucuda build yok, süre kısa.
-8. **İsteğe bağlı:** `--build-images` ile api/web/monolith sunucuda build (WEB = rifatsekerariot/beaver-iot-web; 15–25 dk).
-9. **`chirpstack.yaml`** ile `docker compose up -d` çalıştırır.
-10. **`CHIRPSTACK_DEFAULT_TENANT_ID`**: `--tenant-id` ile verdiğiniz değer ortam değişkeni olarak compose’a geçer.
+4. **Klonlar:** yalnızca **beaver-iot-docker** (varsayılan; integrations + JAR yok).
+5. **Varsayılan:** Hazır image pull (`ghcr.io/rifatsekerariot/beaver-iot:latest`; JAR + widget’lı). **`chirpstack-prebuilt.yaml`** ile `docker compose up -d`. Sunucuda JAR build yok; tek script, hızlı kurulum.
+6. **İsteğe bağlı `--build-images`:** `beaver-iot-integrations` klonlar, ChirpStack JAR build (Maven), JAR’ı hem `examples/target/...` hem `build-docker/integrations/` altına kopyalar, api/web/monolith build, **`chirpstack.yaml`** (volume’lu) ile compose up. 15–25 dk sürebilir.
+7. **`CHIRPSTACK_DEFAULT_TENANT_ID`**: `--tenant-id` ile verdiğiniz değer ortam değişkeni olarak compose’a geçer.
 
 ---
 
@@ -113,7 +108,7 @@ Bu komut api/web/monolith'ı build eder (WEB = rifatsekerariot/beaver-iot-web). 
 | Değişken | Açıklama |
 |----------|----------|
 | `WORKSPACE` | Workspace dizini (`--workspace` öncelikli). |
-| `REPO_INTEGRATIONS` | integrations repo URL (opsiyonel). |
+| `REPO_INTEGRATIONS` | integrations repo URL (`--build-images` ile; varsayılan modda kullanılmaz). |
 | `REPO_DOCKER` | docker repo URL (opsiyonel). |
 | `REPO_WEB` | Web repo URL (`--build-images` ile; varsayılan: rifatsekerariot/beaver-iot-web). |
 | `REPO_WEB_BRANCH` | Web branch (`--build-images` ile; varsayılan: `origin/main`). |
@@ -168,10 +163,9 @@ Custom script extension ile `deploy-zero-touch.sh` indirilip `sudo sh` ile çal�
 
 ## Özet
 
-- **Tek komut (varsayılan, hızlı):** Hazır image pull + JAR + compose. Widget’lar dahil.  
+- **Tek komut (varsayılan, hızlı):** Yalnızca docker repo klonlanır, hazır image pull, **JAR build yok**, `chirpstack-prebuilt` compose.  
   `curl -sSL .../deploy-zero-touch.sh | sudo sh -s -- --tenant-id "default"`
-- **Sunucuda build (yavaş):** `--build-images` ile api/web/monolith kaynaktan build.  
+- **Sunucuda build (yavaş):** `--build-images` ile integrations + JAR + api/web/monolith build.  
   `curl -sSL .../deploy-zero-touch.sh | sudo sh -s -- --tenant-id "default" --build-images`
 - **İlk kullanım:** "Build and push prebuilt image" workflow’ı en az bir kez çalıştırın (Actions → workflow_dispatch veya main’e push).
-- Docker/Git script ile kurulur, repolar klonlanır, JAR build edilir, compose ayağa kalkar.
 - **Sadece Linux** kullanılır; Windows için bu zero-touch dağıtım **yoktur**.

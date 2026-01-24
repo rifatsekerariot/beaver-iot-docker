@@ -11,6 +11,9 @@ RUN chmod +x /envsubst-on-templates.sh
 COPY nginx/main.conf /etc/nginx/nginx.conf
 COPY nginx/templates /etc/nginx/templates
 
+RUN mkdir -p /root/beaver-iot/integrations
+COPY integrations/ /root/beaver-iot/integrations/
+
 ENV BEAVER_IOT_API_HOST=localhost
 ENV BEAVER_IOT_API_PORT=9200
 ENV MQTT_BROKER_WS_PATH=/mqtt
