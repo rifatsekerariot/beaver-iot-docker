@@ -12,9 +12,10 @@ Bu dokümanda, **Beaver IoT + ChirpStack v4 HTTP entegrasyonunu** bir **Linux su
 2. Git yoksa kurulur  
 3. Repolar klonlanır  
 4. ChirpStack JAR build edilir (Docker Maven)  
-5. JAR kopyalanır, `docker compose` ile Beaver + ChirpStack ayağa kalkar  
+5. JAR kopyalanır, **hazır image** (`ghcr.io/rifatsekerariot/beaver-iot:latest`, Alarm/Map/DeviceList widget’lı) pull edilir, `docker compose` ile Beaver + ChirpStack ayağa kalkar  
 
 **Şartlar:** Linux, `sudo`, internet, **9080 / 1883 / 8083** portları boş olmalı.  
+**İlk kullanım:** "Build and push prebuilt image" GitHub Actions workflow’ının en az bir kez çalışmış olması gerekir (repo main’e push veya manuel tetikleme).  
 Windows’ta çalışmaz; WSL veya uzak Linux sunucu kullanın.
 
 ---
@@ -89,9 +90,10 @@ Bu komut api/web/monolith'ı build eder (WEB = rifatsekerariot/beaver-iot-web). 
    - `beaver-iot-docker` (rifatsekerariot)
 5. **ChirpStack JAR** build: `docker run` ile Maven.
 6. JAR’ı `examples/target/chirpstack/integrations/` altına kopyalar.
-7. **İsteğe bağlı:** `--build-images` ile api/web/monolith build (WEB = rifatsekerariot/beaver-iot-web; Alarm/Map/DeviceList dahil). Varsayılan kapalı; `milesight/beaver-iot:latest` pull.
-8. **`chirpstack.yaml`** ile `docker compose up -d` çalıştırır.
-9. **`CHIRPSTACK_DEFAULT_TENANT_ID`**: `--tenant-id` ile verdiğiniz değer ortam değişkeni olarak compose’a geçer.
+7. **Varsayılan:** Hazır image pull (`ghcr.io/rifatsekerariot/beaver-iot:latest`; widget’lı). Sunucuda build yok, süre kısa.
+8. **İsteğe bağlı:** `--build-images` ile api/web/monolith sunucuda build (WEB = rifatsekerariot/beaver-iot-web; 15–25 dk).
+9. **`chirpstack.yaml`** ile `docker compose up -d` çalıştırır.
+10. **`CHIRPSTACK_DEFAULT_TENANT_ID`**: `--tenant-id` ile verdiğiniz değer ortam değişkeni olarak compose’a geçer.
 
 ---
 
@@ -117,6 +119,7 @@ Bu komut api/web/monolith'ı build eder (WEB = rifatsekerariot/beaver-iot-web). 
 | `REPO_WEB_BRANCH` | Web branch (`--build-images` ile; varsayılan: `origin/main`). |
 | `REPO_API` | API (beaver-iot) repo URL (`--build-images` ile; varsayılan: Milesight-IoT/beaver-iot). |
 | `REPO_API_BRANCH` | API branch (`--build-images` ile; varsayılan: `origin/release`). |
+| `BEAVER_IMAGE` | Monolith image (varsayılan: ghcr.io/rifatsekerariot/beaver-iot:latest). Override ile farklı image kullanılabilir. |
 
 ---
 
@@ -165,8 +168,10 @@ Custom script extension ile `deploy-zero-touch.sh` indirilip `sudo sh` ile çal�
 
 ## Özet
 
-- **Canlı sunucu test (widget'lı):** `curl -sSL .../deploy-zero-touch.sh | sudo sh -s -- --tenant-id "default" --build-images`
-- **Linux sunucuda** tek komut (varsayılan, pull):  
+- **Tek komut (varsayılan, hızlı):** Hazır image pull + JAR + compose. Widget’lar dahil.  
   `curl -sSL .../deploy-zero-touch.sh | sudo sh -s -- --tenant-id "default"`
-- Docker ve gerekirse Git script ile kurulur, repolar klonlanır, JAR build edilir, compose ayağa kalkar.
+- **Sunucuda build (yavaş):** `--build-images` ile api/web/monolith kaynaktan build.  
+  `curl -sSL .../deploy-zero-touch.sh | sudo sh -s -- --tenant-id "default" --build-images`
+- **İlk kullanım:** "Build and push prebuilt image" workflow’ı en az bir kez çalıştırın (Actions → workflow_dispatch veya main’e push).
+- Docker/Git script ile kurulur, repolar klonlanır, JAR build edilir, compose ayağa kalkar.
 - **Sadece Linux** kullanılır; Windows için bu zero-touch dağıtım **yoktur**.

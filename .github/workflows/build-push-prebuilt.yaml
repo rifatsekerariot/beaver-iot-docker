@@ -1,0 +1,63 @@
+# Build and push pre-built Beaver IoT image (widget + ChirpStack-ready) to GHCR.
+# Used by zero-touch default: pull this image, no build on server.
+name: Build and push prebuilt image
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'build-docker/**'
+      - 'scripts/**'
+      - '.github/workflows/build-push-prebuilt.yaml'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE: ghcr.io/rifatsekerariot/beaver-iot
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --allow-insecure-entitlement network.host
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create .env for build
+        run: |
+          cd build-docker
+          cat > .env << 'EOF'
+          API_GIT_REPO_URL=https://github.com/Milesight-IoT/beaver-iot.git
+          API_GIT_BRANCH=origin/release
+          WEB_GIT_REPO_URL=https://github.com/rifatsekerariot/beaver-iot-web.git
+          WEB_GIT_BRANCH=origin/main
+          DOCKER_REPO=milesight
+          PRODUCTION_TAG=latest
+          EOF
+
+      - name: Build api, web, monolith
+        run: |
+          cd build-docker
+          docker compose build --no-cache api web monolith
+        env:
+          DOCKER_BUILDKIT: 1
+          COMPOSE_DOCKER_CLI_BUILD: 1
+
+      - name: Tag and push monolith to GHCR
+        run: |
+          docker tag milesight/beaver-iot:latest ${{ env.IMAGE }}:latest
+          docker push ${{ env.IMAGE }}:latest

@@ -80,7 +80,7 @@ echo "[zero-touch] Tenant ID:  ${TENANT_ID:-<not set>}"
 if [ -n "$BUILD_IMAGES" ]; then
   echo "[zero-touch] Build images: yes (api=$REPO_API $REPO_API_BRANCH, web=$REPO_WEB $REPO_WEB_BRANCH)"
 else
-  echo "[zero-touch] Build images: no (will use/pull milesight/beaver-iot:latest)"
+  echo "[zero-touch] Build images: no (will pull prebuilt ghcr.io/rifatsekerariot/beaver-iot:latest)"
 fi
 
 # --- Docker ---
@@ -184,6 +184,13 @@ if [ -n "$BUILD_IMAGES" ]; then
     echo "[zero-touch] ERROR: build-docker not found at $BD"
     exit 1
   fi
+  # .env ensures WEB_GIT_BRANCH=origin/main (widget fix); avoid origin/develop default
+  {
+    echo "API_GIT_REPO_URL=$REPO_API"
+    echo "API_GIT_BRANCH=$REPO_API_BRANCH"
+    echo "WEB_GIT_REPO_URL=$REPO_WEB"
+    echo "WEB_GIT_BRANCH=$REPO_WEB_BRANCH"
+  } > "$BD/.env"
   export API_GIT_REPO_URL="$REPO_API"
   export API_GIT_BRANCH="$REPO_API_BRANCH"
   export WEB_GIT_REPO_URL="$REPO_WEB"
@@ -198,7 +205,12 @@ if [ -n "$BUILD_IMAGES" ]; then
 fi
 
 # --- Compose up ---
-echo "[zero-touch] Starting Beaver IoT + ChirpStack stack..."
+if [ -n "$BUILD_IMAGES" ]; then
+  export BEAVER_IMAGE="milesight/beaver-iot:latest"
+else
+  export BEAVER_IMAGE="${BEAVER_IMAGE:-ghcr.io/rifatsekerariot/beaver-iot:latest}"
+fi
+echo "[zero-touch] Starting Beaver IoT + ChirpStack stack (image: $BEAVER_IMAGE)..."
 cd "$WORKSPACE/beaver-iot-docker/examples"
 $COMPOSE_CMD -f chirpstack.yaml up -d
 

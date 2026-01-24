@@ -7,6 +7,7 @@ WORKDIR /
 RUN apk add --no-cache git && git clone ${WEB_GIT_REPO_URL} beaver-iot-web
 
 WORKDIR /beaver-iot-web
+ENV CI=true
 RUN git checkout ${WEB_GIT_BRANCH} && npm install -g pnpm && pnpm install && pnpm build
 
 
