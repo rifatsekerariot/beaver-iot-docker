@@ -115,6 +115,8 @@ Bu komut api/web/monolith'ı build eder (WEB = rifatsekerariot/beaver-iot-web). 
 | `REPO_DOCKER` | docker repo URL (opsiyonel). |
 | `REPO_WEB` | Web repo URL (`--build-images` ile; varsayılan: rifatsekerariot/beaver-iot-web). |
 | `REPO_WEB_BRANCH` | Web branch (`--build-images` ile; varsayılan: `origin/main`). |
+| `REPO_API` | API (beaver-iot) repo URL (`--build-images` ile; varsayılan: Milesight-IoT/beaver-iot). |
+| `REPO_API_BRANCH` | API branch (`--build-images` ile; varsayılan: `origin/release`). |
 
 ---
 

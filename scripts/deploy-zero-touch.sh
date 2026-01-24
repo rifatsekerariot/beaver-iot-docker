@@ -13,6 +13,8 @@ REPO_INTEGRATIONS="${REPO_INTEGRATIONS:-https://github.com/rifatsekerariot/beave
 REPO_DOCKER="${REPO_DOCKER:-https://github.com/rifatsekerariot/beaver-iot-docker.git}"
 REPO_WEB="${REPO_WEB:-https://github.com/rifatsekerariot/beaver-iot-web.git}"
 REPO_WEB_BRANCH="${REPO_WEB_BRANCH:-origin/main}"
+REPO_API="${REPO_API:-https://github.com/Milesight-IoT/beaver-iot.git}"
+REPO_API_BRANCH="${REPO_API_BRANCH:-origin/release}"
 MAVEN_IMAGE="${MAVEN_IMAGE:-maven:3.8-eclipse-temurin-17-alpine}"
 WORKSPACE="${WORKSPACE:-/opt/beaver-chirpstack}"
 TENANT_ID=""
@@ -76,7 +78,7 @@ echo "[zero-touch] Linux zero-touch deploy: Beaver IoT + ChirpStack v4"
 echo "[zero-touch] Workspace: $WORKSPACE"
 echo "[zero-touch] Tenant ID:  ${TENANT_ID:-<not set>}"
 if [ -n "$BUILD_IMAGES" ]; then
-  echo "[zero-touch] Build images: yes (web=$REPO_WEB $REPO_WEB_BRANCH)"
+  echo "[zero-touch] Build images: yes (api=$REPO_API $REPO_API_BRANCH, web=$REPO_WEB $REPO_WEB_BRANCH)"
 else
   echo "[zero-touch] Build images: no (will use/pull milesight/beaver-iot:latest)"
 fi
@@ -182,9 +184,10 @@ if [ -n "$BUILD_IMAGES" ]; then
     echo "[zero-touch] ERROR: build-docker not found at $BD"
     exit 1
   fi
+  export API_GIT_REPO_URL="$REPO_API"
+  export API_GIT_BRANCH="$REPO_API_BRANCH"
   export WEB_GIT_REPO_URL="$REPO_WEB"
   export WEB_GIT_BRANCH="$REPO_WEB_BRANCH"
-  # API remains default (Milesight) unless overridden via env
   cd "$BD"
   if ! $COMPOSE_CMD build --no-cache api web monolith; then
     echo "[zero-touch] ERROR: Docker image build failed. Check logs above."
