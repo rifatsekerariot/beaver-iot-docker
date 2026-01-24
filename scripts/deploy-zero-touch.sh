@@ -143,7 +143,7 @@ if [ ! -d beaver-iot-docker ]; then
   git clone --depth 1 -b main "$REPO_DOCKER" beaver-iot-docker
 else
   echo "[zero-touch] Updating beaver-iot-docker..."
-  (cd beaver-iot-docker && git fetch origin main 2>/dev/null; git checkout main 2>/dev/null; git pull --depth 1 2>/dev/null || true)
+  (cd beaver-iot-docker && git fetch origin main 2>/dev/null && git checkout main 2>/dev/null && git reset --hard origin/main 2>/dev/null) || true
 fi
 
 # --- Integrations + JAR only when building images ---
@@ -153,7 +153,7 @@ if [ -n "$BUILD_IMAGES" ]; then
     git clone --depth 1 -b main "$REPO_INTEGRATIONS" beaver-iot-integrations
   else
     echo "[zero-touch] Updating beaver-iot-integrations..."
-    (cd beaver-iot-integrations && git fetch origin main 2>/dev/null; git checkout main 2>/dev/null; git pull --depth 1 2>/dev/null || true)
+    (cd beaver-iot-integrations && git fetch origin main 2>/dev/null && git checkout main 2>/dev/null && git reset --hard origin/main 2>/dev/null) || true
   fi
 
   echo "[zero-touch] Building chirpstack-integration JAR (Docker Maven)..."

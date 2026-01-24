@@ -158,6 +158,7 @@ Custom script extension ile `deploy-zero-touch.sh` indirilip `sudo sh` ile çal�
 | `git clone` failed | Ağ / firewall | GitHub (443) erişimini kontrol edin. |
 | `Cannot connect to Docker daemon` | Docker kapalı | `sudo systemctl start docker` |
 | Port 9080 kullanımda | Çakışma | `chirpstack.yaml`’da portu değiştirin (örn. 9081:80). |
+| `chirpstack-prebuilt.yaml: no such file` | Eski klon / branch diverge | `cd .../beaver-iot-docker && git fetch origin main && git checkout main && git reset --hard origin/main` sonra script'i tekrar çalıştırın. |
 
 ---
 
