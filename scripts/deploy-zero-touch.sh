@@ -202,8 +202,17 @@ if [ -n "$BUILD_IMAGES" ]; then
   export WEB_GIT_REPO_URL="$REPO_WEB"
   export WEB_GIT_BRANCH="$REPO_WEB_BRANCH"
   cd "$BD"
-  if ! $COMPOSE_CMD build --no-cache api web monolith; then
-    echo "[zero-touch] ERROR: Docker image build failed. Check logs above."
+  # Build order matters: monolith FROM web image; web must exist before monolith.
+  if ! $COMPOSE_CMD build --no-cache api; then
+    echo "[zero-touch] ERROR: Docker api build failed."
+    exit 1
+  fi
+  if ! $COMPOSE_CMD build --no-cache web; then
+    echo "[zero-touch] ERROR: Docker web build failed."
+    exit 1
+  fi
+  if ! $COMPOSE_CMD build --no-cache monolith; then
+    echo "[zero-touch] ERROR: Docker monolith build failed. Check logs above."
     exit 1
   fi
   cd "$WORKSPACE"

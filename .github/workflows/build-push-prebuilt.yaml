@@ -69,13 +69,22 @@ jobs:
           PRODUCTION_TAG=latest
           EOF
 
-      - name: Build api, web, monolith
+      - name: Build api, web, monolith (order matters: web before monolith)
         run: |
           cd build-docker
-          docker compose build --no-cache api web monolith
+          docker compose build --no-cache api
+          docker compose build --no-cache web
+          docker compose build --no-cache monolith
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
+          WEB_GIT_REPO_URL: https://github.com/rifatsekerariot/beaver-iot-web.git
+          WEB_GIT_BRANCH: origin/main
+
+      - name: Verify web image (our build, not upstream)
+        run: |
+          docker run --rm milesight/beaver-iot-web:latest sh -c "test -f /web/index.html && test -d /web/assets && ls /web/assets/*.js 2>/dev/null | head -1"
+          echo "OK: web image has index.html and assets"
 
       - name: Tag and push monolith to GHCR
         run: |

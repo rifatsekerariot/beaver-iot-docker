@@ -159,7 +159,7 @@ Custom script extension ile `deploy-zero-touch.sh` indirilip `sudo sh` ile çal�
 | `Cannot connect to Docker daemon` | Docker kapalı | `sudo systemctl start docker` |
 | Port 9080 kullanımda | Çakışma | `chirpstack.yaml`’da portu değiştirin (örn. 9081:80). |
 | `chirpstack-prebuilt.yaml: no such file` | Eski klon / branch diverge | `cd .../beaver-iot-docker && git fetch origin main && git checkout main && git reset --hard origin/main` sonra script'i tekrar çalıştırın. |
-| Alarm/Map/Device List widget’ları yok (sunucuda) | Eski image | 1) Actions → "Build and push prebuilt image" → Run workflow. 2) Zero-touch’u tekrar çalıştırın (script artık pull yapıyor). |
+| Alarm/Map/Device List widget’ları yok (sunucuda) | Eski image veya CI’da web monolith’tan önce build edilmedi | Workflow artık **api → web → monolith** sırasıyla build ediyor. 1) Actions → "Build and push prebuilt image" → Run workflow. 2) Zero-touch’u tekrar çalıştırın (pull + up). |
 | `/api/v1/user/status` 502 Bad Gateway | API henüz ayağa kalkmadı | Yeni image Java önce, sonra nginx kullanıyor. Workflow’u çalıştırıp güncel image’ı pull edin; 502 düzelir. |
 
 ---
