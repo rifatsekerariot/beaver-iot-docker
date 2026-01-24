@@ -5,11 +5,13 @@ FROM ${BASE_WEB_IMAGE} AS web
 
 FROM ${BASE_API_IMAGE} AS monolith
 COPY --from=web /web /web
-RUN apk add --no-cache envsubst nginx nginx-mod-http-headers-more
+RUN apk add --no-cache envsubst nginx nginx-mod-http-headers-more netcat-openbsd
 COPY nginx/envsubst-on-templates.sh /envsubst-on-templates.sh
 RUN chmod +x /envsubst-on-templates.sh
 COPY nginx/main.conf /etc/nginx/nginx.conf
 COPY nginx/templates /etc/nginx/templates
+COPY monolith-start.sh /monolith-start.sh
+RUN chmod +x /monolith-start.sh
 
 RUN mkdir -p /root/beaver-iot/integrations
 COPY integrations/ /root/beaver-iot/integrations/
@@ -26,4 +28,4 @@ EXPOSE 1883
 EXPOSE 8083
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["/bin/sh", "-c", "/envsubst-on-templates.sh && nginx && java -Dloader.path=${HOME}/beaver-iot/integrations ${JAVA_OPTS} -jar /application.jar ${SPRING_OPTS}"]
+CMD ["/monolith-start.sh"]
