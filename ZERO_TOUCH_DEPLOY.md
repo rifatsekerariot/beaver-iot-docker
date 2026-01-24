@@ -4,6 +4,21 @@ Bu dokümanda, **Beaver IoT + ChirpStack v4 HTTP entegrasyonunu** bir **Linux su
 
 ---
 
+## Script çalıştırınca sistem otomatik ayağa kalkar mı?
+
+**Evet.** Linux sunucuda script’i `sudo` ile çalıştırırsanız, **hiçbir şeyi elle kurmanıza gerek kalmadan**:
+
+1. Docker yoksa kurulur  
+2. Git yoksa kurulur  
+3. Repolar klonlanır  
+4. ChirpStack JAR build edilir (Docker Maven)  
+5. JAR kopyalanır, `docker compose` ile Beaver + ChirpStack ayağa kalkar  
+
+**Şartlar:** Linux, `sudo`, internet, **9080 / 1883 / 8083** portları boş olmalı.  
+Windows’ta çalışmaz; WSL veya uzak Linux sunucu kullanın.
+
+---
+
 ## Zero touch ne demek?
 
 - Sunucuda **tek `deploy-zero-touch.sh`** çalıştırıyorsunuz.
@@ -95,6 +110,7 @@ sudo WORKSPACE=/opt/beaver-chirpstack sh /tmp/deploy-zero-touch.sh --tenant-id "
 - **Webhook (ChirpStack):** `http://<SUNUCU_IP>:9080/public/integration/chirpstack/webhook`
 - **Log:** `docker logs -f beaver-iot`
 - **Test:** `curl` ile webhook’a POST veya `scripts/test-webhook.ps1` başka bir makineden (Windows) çalıştırılabilir; sunucu tarafı sadece Linux.
+- **Cihaz ekleme:** Webhook’tan gelen cihazlar için önce Beaver’da kayıt gerekir: **Device → Add → ChirpStack HTTP** → Device Name + **External Device ID (DevEUI)** (ChirpStack’teki DevEUI ile aynı) → Confirm. Ayrıntı: `CHIRPSTACK_BAGLANTI_VE_CALISTIRMA.md` (integrations repo).
 
 ---
 
