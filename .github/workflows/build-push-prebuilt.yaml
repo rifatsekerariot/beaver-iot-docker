@@ -9,10 +9,10 @@ on:
   push:
     branches: [main]
     paths:
-      - 'build-docker/**'
-      - 'scripts/**'
-      - 'examples/**'
-      - '.github/workflows/build-push-prebuilt.yaml'
+      - build-docker/**
+      - scripts/**
+      - examples/**
+      - .github/workflows/build-push-prebuilt.yaml
 
 env:
   REGISTRY: ghcr.io
@@ -21,6 +21,9 @@ env:
 jobs:
   build-push:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: "1"
+      COMPOSE_DOCKER_CLI_BUILD: "1"
     permissions:
       contents: read
       packages: write
@@ -29,64 +32,29 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Clone integrations and build ChirpStack JAR
-        run: |
-          git clone --depth 1 -b main https://github.com/rifatsekerariot/beaver-iot-integrations.git /tmp/beaver-iot-integrations
-          docker run --rm \
-            -v /tmp/beaver-iot-integrations:/workspace \
-            -w /workspace \
-            maven:3.8-eclipse-temurin-17-alpine \
-            mvn clean package -DskipTests -pl integrations/chirpstack-integration -am -q
-          JAR=$(find /tmp/beaver-iot-integrations/integrations/chirpstack-integration/target -maxdepth 1 -name 'chirpstack-integration-*.jar' ! -name '*original*' 2>/dev/null | head -1)
-          if [ -z "$JAR" ] || [ ! -f "$JAR" ]; then
-            echo "ERROR: ChirpStack JAR not found"
-            exit 1
-          fi
-          mkdir -p build-docker/integrations
-          cp -f "$JAR" build-docker/integrations/
-          echo "JAR copied to build-docker/integrations"
+        run: sh scripts/ci-build-jar.sh
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          buildkitd-flags: --allow-insecure-entitlement network.host
+          buildkitd-flags: "--allow-insecure-entitlement network.host"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create .env for build
-        run: |
-          cd build-docker
-          cat > .env << 'EOF'
-          API_GIT_REPO_URL=https://github.com/Milesight-IoT/beaver-iot.git
-          API_GIT_BRANCH=origin/release
-          WEB_GIT_REPO_URL=https://github.com/rifatsekerariot/beaver-iot-web.git
-          WEB_GIT_BRANCH=origin/main
-          DOCKER_REPO=milesight
-          PRODUCTION_TAG=latest
-          EOF
+        run: sh scripts/create-build-env.sh
 
-      - name: Build api, web, monolith (order matters: web before monolith)
-        run: |
-          cd build-docker
-          docker compose build --no-cache api
-          docker compose build --no-cache web
-          docker compose build --no-cache monolith
-        env:
-          DOCKER_BUILDKIT: 1
-          COMPOSE_DOCKER_CLI_BUILD: 1
-          WEB_GIT_REPO_URL: https://github.com/rifatsekerariot/beaver-iot-web.git
-          WEB_GIT_BRANCH: origin/main
+      - name: "Build api, web, monolith (order matters: web before monolith)"
+        run: sh scripts/build-prebuilt.sh
 
       - name: Verify web image (our build, not upstream)
-        run: |
-          docker run --rm milesight/beaver-iot-web:latest sh -c "test -f /web/index.html && test -d /web/assets"
-          echo "OK: web image has index.html and assets"
+        run: sh scripts/verify-web-image.sh
 
       - name: Tag and push monolith to GHCR
-        run: |
-          docker tag milesight/beaver-iot:latest ${{ env.IMAGE }}:latest
-          docker push ${{ env.IMAGE }}:latest
+        run: sh scripts/tag-push-ghcr.sh
+
