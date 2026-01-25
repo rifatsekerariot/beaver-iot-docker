@@ -17,6 +17,12 @@ server {
         return 204;
     }
 
+    # Loading page for backend initialization
+    location = /loading.html {
+        try_files /loading.html =404;
+        access_log off;
+    }
+
     location / {
         try_files $uri $uri/ /index.html;
         access_log off;

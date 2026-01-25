@@ -10,6 +10,7 @@ COPY nginx/envsubst-on-templates.sh /envsubst-on-templates.sh
 RUN chmod +x /envsubst-on-templates.sh
 COPY nginx/main.conf /etc/nginx/nginx.conf
 COPY nginx/templates /etc/nginx/templates
+COPY nginx/loading.html /web/loading.html
 COPY monolith-start.sh /monolith-start.sh
 RUN chmod +x /monolith-start.sh
 

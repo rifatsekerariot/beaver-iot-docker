@@ -1,5 +1,6 @@
 #!/bin/sh
 # Start API first, wait for it, then nginx. Avoids 502 on /api while Java boots.
+# Loading page (/loading.html) will check backend status and redirect when ready.
 set -e
 
 /envsubst-on-templates.sh
@@ -15,5 +16,8 @@ while [ $i -lt 120 ]; do
   sleep 2
   i=$((i + 2))
 done
+
+# Note: Even if port is open, Spring Boot may still be initializing.
+# The loading.html page will handle the final readiness check via JavaScript.
 
 exec nginx -g 'daemon off;'
