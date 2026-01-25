@@ -1,6 +1,7 @@
 # Build and push pre-built Beaver IoT image (widget + ChirpStack-ready) to GHCR.
 # Matches LOCAL build: same layout (beaver-iot-web + beaver-iot-docker), beaver-iot-web-local.dockerfile.
 # Used by zero-touch default: pull this image, no build on server.
+# Updated: 2025-01-24 - BackendReadyCheck component added (wait for backend API before rendering app)
 
 name: Build and push prebuilt image
 
