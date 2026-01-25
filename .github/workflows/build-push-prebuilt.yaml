@@ -3,6 +3,7 @@
 # Used by zero-touch default: pull this image, no build on server.
 # Updated: 2025-01-24 - BackendReadyCheck component added (wait for backend API before rendering app)
 # Updated: 2025-01-24 - RSSI and SNR from rxInfo now saved as entity values
+# Updated: 2025-01-24 - ARIOT loading page added (shows before React app loads if backend not ready)
 
 name: Build and push prebuilt image
 
