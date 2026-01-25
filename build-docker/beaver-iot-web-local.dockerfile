@@ -10,8 +10,32 @@ COPY beaver-iot-web/ .
 ENV CI=true
 RUN npm install -g pnpm && pnpm install && pnpm build
 
+# Debug: Verify build output exists and has correct structure
+RUN echo "=== Checking build output ===" && \
+    test -d /beaver-iot-web/apps/web/dist || { echo "ERROR: dist directory not found"; exit 1; } && \
+    echo "✓ dist directory exists" && \
+    ls -la /beaver-iot-web/apps/web/dist && \
+    test -f /beaver-iot-web/apps/web/dist/index.html || { echo "ERROR: index.html not found in dist"; exit 1; } && \
+    echo "✓ index.html exists" && \
+    (test -d /beaver-iot-web/apps/web/dist/assets && echo "✓ assets directory exists" || echo "WARNING: assets directory not found") && \
+    (test -d /beaver-iot-web/apps/web/dist/assets/js && echo "✓ assets/js directory exists" || echo "WARNING: assets/js directory not found") && \
+    echo "=== Listing dist contents ===" && \
+    find /beaver-iot-web/apps/web/dist -maxdepth 2 -type d | head -20 && \
+    find /beaver-iot-web/apps/web/dist -maxdepth 2 -type f | head -20
+
 FROM alpine:3.20 AS web
 COPY --from=web-builder /beaver-iot-web/apps/web/dist /web
+
+# Debug: Verify copied structure
+RUN echo "=== Verifying copied /web structure ===" && \
+    test -d /web || { echo "ERROR: /web directory not found after copy"; exit 1; } && \
+    test -f /web/index.html || { echo "ERROR: /web/index.html not found after copy"; exit 1; } && \
+    echo "✓ /web directory and index.html exist" && \
+    (test -d /web/assets && echo "✓ /web/assets exists" || echo "WARNING: /web/assets not found") && \
+    (test -d /web/assets/js && echo "✓ /web/assets/js exists" || echo "WARNING: /web/assets/js not found") && \
+    echo "=== /web directory structure ===" && \
+    ls -la /web && \
+    find /web -maxdepth 2 -type d | head -20
 RUN apk add --no-cache envsubst nginx nginx-mod-http-headers-more
 COPY beaver-iot-docker/build-docker/nginx/envsubst-on-templates.sh /envsubst-on-templates.sh
 COPY beaver-iot-docker/build-docker/nginx/main.conf /etc/nginx/nginx.conf
