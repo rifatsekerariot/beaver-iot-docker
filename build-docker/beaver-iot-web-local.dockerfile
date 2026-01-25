@@ -14,10 +14,10 @@ FROM alpine:3.20 AS web
 COPY --from=web-builder /beaver-iot-web/apps/web/dist /web
 
 RUN apk add --no-cache envsubst nginx nginx-mod-http-headers-more
-COPY build-docker/nginx/envsubst-on-templates.sh /envsubst-on-templates.sh
+COPY beaver-iot-docker/build-docker/nginx/envsubst-on-templates.sh /envsubst-on-templates.sh
 RUN chmod +x /envsubst-on-templates.sh
-COPY build-docker/nginx/main.conf /etc/nginx/nginx.conf
-COPY build-docker/nginx/templates /etc/nginx/templates
+COPY beaver-iot-docker/build-docker/nginx/main.conf /etc/nginx/nginx.conf
+COPY beaver-iot-docker/build-docker/nginx/templates /etc/nginx/templates
 
 ENV BEAVER_IOT_API_HOST=172.17.0.1
 ENV BEAVER_IOT_API_PORT=9200
@@ -29,6 +29,6 @@ EXPOSE 80
 
 RUN mkdir -p /run/nginx
 
-COPY build-docker/docker-entrypoint.sh /docker-entrypoint.sh
+COPY beaver-iot-docker/build-docker/docker-entrypoint.sh /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["/bin/sh", "-c", "/envsubst-on-templates.sh && nginx -g 'daemon off;'"]
