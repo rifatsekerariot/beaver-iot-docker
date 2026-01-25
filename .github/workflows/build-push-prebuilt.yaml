@@ -68,8 +68,8 @@ jobs:
         run: |
           echo "=== Web image /web/assets/js (first 60) ==="
           docker run --rm --entrypoint sh milesight/beaver-iot-web:latest -c "ls /web/assets/js | head -60"
-          echo "=== Alarm/Map chunks ==="
-          docker run --rm --entrypoint sh milesight/beaver-iot-web:latest -c "ls /web/assets/js | grep -E '^Alarm-|^Map-' || true"
+          echo "=== useAlarmEmphasis / DrawingBoard chunks ==="
+          docker run --rm --entrypoint sh milesight/beaver-iot-web:latest -c "ls /web/assets/js | grep -E '^useAlarmEmphasis-|^DrawingBoard-' || true"
 
       - name: Verify web image
         run: sh beaver-iot-docker/scripts/verify-web-image.sh
