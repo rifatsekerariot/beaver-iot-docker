@@ -8,14 +8,7 @@ WORKDIR /beaver-iot-web
 COPY beaver-iot-web/ .
 
 ENV CI=true
-RUN npm install -g pnpm && \
-    pnpm install && \
-    echo "=== Starting build ===" && \
-    pnpm build 2>&1 && \
-    echo "=== Build finished, checking dist ===" && \
-    ls -la /beaver-iot-web/apps/web/dist/ && \
-    echo "=== Checking for assets ===" && \
-    ls -la /beaver-iot-web/apps/web/dist/assets/ 2>&1 || echo "WARNING: assets directory not found"
+RUN npm install -g pnpm && pnpm install && pnpm build
 
 FROM alpine:3.20 AS web
 COPY --from=web-builder /beaver-iot-web/apps/web/dist /web
