@@ -2,6 +2,7 @@
 # Matches LOCAL build: same layout (beaver-iot-web + beaver-iot-docker), beaver-iot-web-local.dockerfile.
 # Used by zero-touch default: pull this image, no build on server.
 # Updated: 2025-01-24 - BackendReadyCheck component added (wait for backend API before rendering app)
+# Updated: 2025-01-24 - RSSI and SNR from rxInfo now saved as entity values
 
 name: Build and push prebuilt image
 
