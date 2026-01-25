@@ -72,11 +72,11 @@ while [ $# -gt 0 ]; do
 done
 
 export WORKSPACE
-export CHIRPSTACK_DEFAULT_TENANT_ID="${TENANT_ID}"
+export CHIRPSTACK_DEFAULT_TENANT_ID="${TENANT_ID:-default}"
 
 echo "[zero-touch] Linux zero-touch deploy: Beaver IoT + ChirpStack v4"
 echo "[zero-touch] Workspace: $WORKSPACE"
-echo "[zero-touch] Tenant ID:  ${TENANT_ID:-<not set>}"
+echo "[zero-touch] Tenant ID:  ${TENANT_ID:-default (use --tenant-id to override)}"
 if [ -n "$BUILD_IMAGES" ]; then
   echo "[zero-touch] Build images: yes (api=$REPO_API $REPO_API_BRANCH, web=$REPO_WEB $REPO_WEB_BRANCH)"
 else

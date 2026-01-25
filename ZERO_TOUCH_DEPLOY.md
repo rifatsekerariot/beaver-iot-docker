@@ -167,8 +167,8 @@ Custom script extension ile `deploy-zero-touch.sh` indirilip `sudo sh` ile çal�
 
 ## Özet
 
-- **Tek komut (varsayılan, hızlı):** Yalnızca docker repo klonlanır, hazır image pull, **JAR build yok**, `chirpstack-prebuilt` compose.  
-  `curl -sSL .../deploy-zero-touch.sh | sudo sh -s -- --tenant-id "default"`
+- **Tek komut (varsayılan, hızlı):** Yalnızca docker repo klonlanır, hazır image pull, **JAR build yok**, `chirpstack-prebuilt` compose. Tenant varsayılan `default`; `--tenant-id` isteğe bağlı.  
+  `curl -sSL .../deploy-zero-touch.sh | sudo sh -s --`
 - **Sunucuda build (yavaş):** `--build-images` ile integrations + JAR + api/web/monolith build.  
   `curl -sSL .../deploy-zero-touch.sh | sudo sh -s -- --tenant-id "default" --build-images`
 - **İlk kullanım:** "Build and push prebuilt image" workflow’ı en az bir kez çalıştırın (Actions → workflow_dispatch veya main’e push).

@@ -3,6 +3,7 @@
 # Use with zero-touch default: no JAR build, no integrations clone.
 # Image: BEAVER_IMAGE (default ghcr.io/rifatsekerariot/beaver-iot:latest).
 # ChirpStack JAR is inside the image; no volume mount.
+# CHIRPSTACK_DEFAULT_TENANT_ID defaults to "default" so webhook accepts uplinks without X-Tenant-Id.
 
 services:
   monolith:
@@ -21,4 +22,4 @@ services:
       - "SPRING_DATASOURCE_USERNAME=sa"
       - "SPRING_DATASOURCE_PASSWORD="
       - "SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.h2.Driver"
-      - "CHIRPSTACK_DEFAULT_TENANT_ID=${CHIRPSTACK_DEFAULT_TENANT_ID:-}"
+      - "CHIRPSTACK_DEFAULT_TENANT_ID=${CHIRPSTACK_DEFAULT_TENANT_ID:-default}"
