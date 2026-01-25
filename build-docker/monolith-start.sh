@@ -1,4 +1,4 @@
-﻿#!/bin/sh
+#!/bin/sh
 # Start API first, wait for it, then nginx. Avoids 502 on /api while Java boots.
 set -e
 
