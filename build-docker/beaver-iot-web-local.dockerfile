@@ -11,13 +11,11 @@ ENV CI=true
 RUN npm install -g pnpm && \
     pnpm install && \
     echo "=== Running build ===" && \
-    pnpm build 2>&1 | tee /tmp/build.log || { \
+    pnpm build || { \
         echo "ERROR: Build failed"; \
-        cat /tmp/build.log || true; \
         exit 1; \
     } && \
-    echo "=== Build completed successfully ===" && \
-    cat /tmp/build.log | tail -50 || true
+    echo "=== Build completed successfully ==="
 
 # Debug: Verify build output exists and has correct structure
 RUN echo "=== Checking build output ===" && \
@@ -26,11 +24,14 @@ RUN echo "=== Checking build output ===" && \
     ls -la /beaver-iot-web/apps/web/dist && \
     test -f /beaver-iot-web/apps/web/dist/index.html || { echo "ERROR: index.html not found in dist"; exit 1; } && \
     echo "✓ index.html exists" && \
-    (test -d /beaver-iot-web/apps/web/dist/assets && echo "✓ assets directory exists" || echo "WARNING: assets directory not found") && \
-    (test -d /beaver-iot-web/apps/web/dist/assets/js && echo "✓ assets/js directory exists" || echo "WARNING: assets/js directory not found") && \
+    test -d /beaver-iot-web/apps/web/dist/assets || { echo "ERROR: assets directory not found in dist"; ls -la /beaver-iot-web/apps/web/dist; exit 1; } && \
+    echo "✓ assets directory exists" && \
+    test -d /beaver-iot-web/apps/web/dist/assets/js || { echo "ERROR: assets/js directory not found"; ls -la /beaver-iot-web/apps/web/dist/assets; exit 1; } && \
+    echo "✓ assets/js directory exists" && \
     echo "=== Listing dist contents ===" && \
-    find /beaver-iot-web/apps/web/dist -maxdepth 2 -type d | head -20 && \
-    find /beaver-iot-web/apps/web/dist -maxdepth 2 -type f | head -20
+    find /beaver-iot-web/apps/web/dist -maxdepth 2 -type d && \
+    echo "=== Listing assets/js (first 10) ===" && \
+    ls /beaver-iot-web/apps/web/dist/assets/js | head -10
 
 FROM alpine:3.20 AS web
 COPY --from=web-builder /beaver-iot-web/apps/web/dist /web
