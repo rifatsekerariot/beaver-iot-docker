@@ -10,8 +10,11 @@ COPY beaver-iot-web/ .
 ENV CI=true
 RUN npm install -g pnpm && \
     pnpm install && \
-    echo "=== Running build ===" && \
-    pnpm build && \
+    echo "=== Running build (root level) ===" && \
+    pnpm build || { \
+        echo "ERROR: Build failed"; \
+        exit 1; \
+    } && \
     echo "=== Build completed, verifying output ===" && \
     ls -la /beaver-iot-web/apps/web/dist || echo "WARNING: dist not found" && \
     echo "=== Build completed successfully ==="
