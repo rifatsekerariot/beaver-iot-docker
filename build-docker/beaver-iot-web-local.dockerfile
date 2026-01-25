@@ -8,7 +8,12 @@ WORKDIR /beaver-iot-web
 COPY beaver-iot-web/ .
 
 ENV CI=true
-RUN npm install -g pnpm && pnpm install && pnpm build
+RUN npm install -g pnpm && \
+    pnpm install && \
+    echo "=== Starting pnpm build ===" && \
+    pnpm build && \
+    echo "=== Build completed, listing dist ===" && \
+    ls -laR /beaver-iot-web/apps/web/dist/ | head -50
 
 FROM alpine:3.20 AS web
 COPY --from=web-builder /beaver-iot-web/apps/web/dist /web
