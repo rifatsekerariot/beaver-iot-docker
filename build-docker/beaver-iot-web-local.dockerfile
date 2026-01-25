@@ -8,7 +8,16 @@ WORKDIR /beaver-iot-web
 COPY beaver-iot-web/ .
 
 ENV CI=true
-RUN npm install -g pnpm && pnpm install && pnpm build
+RUN npm install -g pnpm && \
+    pnpm install && \
+    echo "=== Running build ===" && \
+    pnpm build 2>&1 | tee /tmp/build.log || { \
+        echo "ERROR: Build failed"; \
+        cat /tmp/build.log || true; \
+        exit 1; \
+    } && \
+    echo "=== Build completed successfully ===" && \
+    cat /tmp/build.log | tail -50 || true
 
 # Debug: Verify build output exists and has correct structure
 RUN echo "=== Checking build output ===" && \

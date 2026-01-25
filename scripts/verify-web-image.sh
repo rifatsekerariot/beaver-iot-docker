@@ -26,18 +26,23 @@ docker run --rm --entrypoint sh "$IMAGE" -c '
     ls /web/assets/js | grep -qE "^useAlarmEmphasis-" || { echo "WARNING: missing useAlarmEmphasis-*.js (widget hook)"; }
     ls /web/assets/js | grep -qE "^DrawingBoard-"     || { echo "WARNING: missing DrawingBoard-*.js"; }
   else
-    echo "WARNING: /web/assets directory not found, checking alternative locations..."
-    # Vite might output to /web directly or different structure
-    if [ -d /web/js ]; then
-      echo "✓ Found /web/js directory"
-      ls /web/js | head -20 || true
-    fi
+    echo "ERROR: /web/assets directory not found"
+    echo "=== Checking if build actually ran ==="
+    # Check if there are any JS files at all (might indicate incomplete build)
+    JS_COUNT=$(find /web -name "*.js" -type f 2>/dev/null | wc -l || echo "0")
+    echo "Found $JS_COUNT .js files in /web"
+    
     # List all directories in /web
     echo "=== All directories in /web ==="
     find /web -type d -maxdepth 2 | head -20 || true
+    echo "=== All files in /web ==="
+    find /web -type f -maxdepth 2 | head -30 || true
     echo "=== All .js files in /web ==="
     find /web -name "*.js" -type f | head -20 || true
-    echo "ERROR: /web/assets directory not found"; exit 1;
+    
+    # This is a critical error - build likely failed
+    echo "ERROR: /web/assets directory not found - build may have failed or output structure is incorrect"
+    exit 1;
   fi
 '
 echo "OK: web image verification passed ($IMAGE)"
