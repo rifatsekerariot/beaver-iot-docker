@@ -8,6 +8,7 @@
 # Updated: 2025-01-25 - Build assets verification fix - enforce assets directory check
 # Updated: 2025-01-25 - Fixed index.html missing script tag - Vite build now creates assets directory
 # Updated: 2025-01-25 - ChirpStack status event telemetry (battery, margin) for widgets
+# Updated: 2025-01-25 - Sensor-model entity mapping (SensorDecoders telemetry, filtered save)
 
 name: Build and push prebuilt image
 
