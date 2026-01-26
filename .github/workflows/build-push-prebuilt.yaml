@@ -24,6 +24,7 @@
 # Updated: 2026-01-26 - Trigger: report dashboard select fix (raw API response, dashboard_id)
 # Updated: 2026-01-26 - Trigger: report use getDrawingBoardDetail (GET /dashboard 500 workaround)
 # Updated: 2026-01-26 - Trigger: fix TS2304 canvasDetail in report PDF build
+# Updated: 2026-01-26 - Trigger: report use canvas.entities, ENTITY_ID-only advanced-search
 
 name: Build and push prebuilt image
 
