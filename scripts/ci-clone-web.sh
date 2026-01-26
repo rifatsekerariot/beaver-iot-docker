@@ -2,6 +2,7 @@
 # Clone beaver-iot-web for CI. Run from workspace root.
 # DEST=beaver-iot-web (sibling of beaver-iot-docker) for local layout; else build-docker/beaver-iot-web.
 # Trigger: 2026-01-26 report DEVICE_ID-based entity fetch.
+# Trigger: 2026-01-26 report DEVICE_ID EQ per device (400 fix) + E2E test script.
 
 set -e
 WEB_REPO="${WEB_GIT_REPO_URL:-https://github.com/rifatsekerariot/beaver-iot-web.git}"
