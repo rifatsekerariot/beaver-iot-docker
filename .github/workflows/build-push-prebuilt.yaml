@@ -25,6 +25,7 @@
 # Updated: 2026-01-26 - Trigger: report use getDrawingBoardDetail (GET /dashboard 500 workaround)
 # Updated: 2026-01-26 - Trigger: fix TS2304 canvasDetail in report PDF build
 # Updated: 2026-01-26 - Trigger: report use canvas.entities, ENTITY_ID-only advanced-search
+# Updated: 2026-01-26 - Trigger: fix report TS flatMap + type predicate
 
 name: Build and push prebuilt image
 
