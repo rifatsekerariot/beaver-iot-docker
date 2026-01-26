@@ -148,6 +148,7 @@ if ($deviceIds.Count -eq 0) {
 }
 
 # 5. Entity advanced-search (DEVICE_ID EQ) - same as Device Entity Data / Report
+$entityIdsForAggregate = @()
 if ($deviceIds.Count -eq 0) {
     Write-Host "[5] No devices - probing entity advanced-search (DEVICE_ID EQ) with placeholder id 1..." -ForegroundColor Yellow
     $probeBody = @{
@@ -188,6 +189,7 @@ if ($deviceIds.Count -eq 0) {
     $entData = if ($entJson.data) { $entJson.data } else { $entJson }
     $entContent = $entData.content
     if (-not $entContent) { $entContent = @() }
+    $entityIdsForAggregate = @($entContent | ForEach-Object { if ($_.id) { $_.id } else { $_.entity_id } } | Where-Object { $_ })
     Write-Host "  Entities: $($entContent.Count)" -ForegroundColor Gray
 }
 
@@ -216,6 +218,36 @@ try {
     }
 } catch {
     Write-Host "  Step 6: $($_.Exception.Message)" -ForegroundColor Gray
+}
+
+# 7. Entity history aggregate (date-range) - when we have entities
+if ($entityIdsForAggregate.Count -gt 0) {
+    Write-Host "[7] Entity history/aggregate (date range)..." -ForegroundColor Yellow
+    $eid = $entityIdsForAggregate[0]
+    $epoch = [DateTimeOffset]::new(1970,1,1,0,0,0,[TimeSpan]::Zero)
+    $now = [DateTimeOffset]::UtcNow
+    $startDto = [DateTimeOffset]::new($now.AddDays(-2).Date, [TimeSpan]::Zero)
+    $endDto = [DateTimeOffset]::new($now.AddDays(-1).Date.AddHours(23).AddMinutes(59).AddSeconds(59).AddMilliseconds(999), [TimeSpan]::Zero)
+    $startAgg = [long]($startDto - $epoch).TotalMilliseconds
+    $endAgg = [long]($endDto - $epoch).TotalMilliseconds
+    $aggBody = @{
+        entity_id = $eid
+        start_timestamp = $startAgg
+        end_timestamp = $endAgg
+        aggregate_type = "LAST"
+    }
+    try {
+        $agg = Invoke-Api -Method POST -Path "/entity/history/aggregate" -Body $aggBody -Token $token
+        if ($agg.StatusCode -eq 200) {
+            Write-Host "  Entity history/aggregate OK (200)" -ForegroundColor Green
+        } else {
+            Write-Host "  Entity history/aggregate $($agg.StatusCode)" -ForegroundColor Gray
+        }
+    } catch {
+        Write-Host "  Entity history/aggregate failed: $($_.Exception.Message)" -ForegroundColor Gray
+    }
+} else {
+    Write-Host "[7] No entities - skipping entity/history/aggregate (date-range) check." -ForegroundColor Gray
 }
 
 Write-Host ""
