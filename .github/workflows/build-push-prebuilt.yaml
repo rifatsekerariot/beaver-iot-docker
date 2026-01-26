@@ -17,6 +17,7 @@
 # Updated: 2025-01-25 - Fix dashboard selection persistence (type conversion, SelectChangeEvent, remove shouldUnregister)
 # Updated: 2025-01-25 - Fix dashboard ID undefined in API call (use getValues and watch, add type conversion)
 # Updated: 2025-01-25 - Fix authentication error handling in report page (prevent duplicate error messages)
+# Updated: 2025-01-26 - Add common.loading translation key, improve dashboard ID validation
 
 name: Build and push prebuilt image
 
