@@ -10,6 +10,7 @@
 # Updated: 2025-01-25 - ChirpStack status event telemetry (battery, margin) for widgets
 # Updated: 2025-01-25 - Sensor-model entity mapping (SensorDecoders telemetry, filtered save)
 # Updated: 2025-01-25 - PDF telemetry report page (/report, jsPDF, no-permission access)
+# Updated: 2025-01-25 - Dashboard-based PDF report (device grouping, dashboard name in PDF)
 
 name: Build and push prebuilt image
 
