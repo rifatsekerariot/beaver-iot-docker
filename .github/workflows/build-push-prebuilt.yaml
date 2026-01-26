@@ -14,6 +14,7 @@
 # Updated: 2025-01-25 - TypeScript fixes for PDF report (type guards, string type safety)
 # Updated: 2025-01-25 - Fix dashboard selection dropdown in report page (useEffect, onChange handler)
 # Updated: 2025-01-25 - Fix dashboard Select component (remove label prop, add inputRef, console.log for debugging)
+# Updated: 2025-01-25 - Fix dashboard selection persistence (type conversion, SelectChangeEvent, remove shouldUnregister)
 
 name: Build and push prebuilt image
 
