@@ -8,7 +8,13 @@ WORKDIR /beaver-iot-web
 COPY beaver-iot-web/ .
 
 ENV CI=true
-RUN npm install -g pnpm && pnpm install && pnpm build
+# Install pnpm (version 9 as required by preinstall script)
+RUN npm install -g pnpm@9
+# Install dependencies with frozen lockfile (CI best practice)
+# Note: postinstall script will run build:pkgs automatically
+RUN pnpm install --frozen-lockfile
+# Build apps (packages already built by postinstall script)
+RUN pnpm run build:apps
 
 FROM alpine:3.20 AS web
 COPY --from=web-builder /beaver-iot-web/apps/web/dist /web
