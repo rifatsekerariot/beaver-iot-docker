@@ -75,6 +75,7 @@ jobs:
       - name: Clone beaver-iot-web (sibling of beaver-iot-docker, same as local)
         env:
           WEB_GIT_REPO_URL: "https://github.com/rifatsekerariot/beaver-iot-web.git"
+          WEB_GIT_BRANCH: "main"
           CI_CLONE_WEB_DEST: "beaver-iot-web"
         run: sh beaver-iot-docker/scripts/ci-clone-web.sh
 
