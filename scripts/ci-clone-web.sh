@@ -5,6 +5,7 @@
 # Trigger: 2026-01-26 report DEVICE_ID EQ per device (400 fix) + E2E test script.
 # Trigger: 2026-01-26 report date-range validation, end-of-day, aggregate test (Step 7).
 # Trigger: 2026-01-26 report use all PROPERTY entities per device (no entityIdSet filter).
+# Trigger: 2026-01-26 report only dashboard-selected telemetry (entityIdSet filter + widget scan).
 
 set -e
 WEB_REPO="${WEB_GIT_REPO_URL:-https://github.com/rifatsekerariot/beaver-iot-web.git}"
