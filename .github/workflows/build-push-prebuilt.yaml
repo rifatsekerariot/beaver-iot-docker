@@ -19,6 +19,7 @@
 # Updated: 2025-01-25 - Fix authentication error handling in report page (prevent duplicate error messages)
 # Updated: 2025-01-26 - Add common.loading translation key, improve dashboard ID validation
 # Updated: 2025-01-26 - Final fix for dashboard ID undefined - improve form state handling and onChange validation
+# Updated: 2025-01-26 - Dashboard selection fix - use setValue to ensure form state updates, add mode onChange
 
 name: Build and push prebuilt image
 
