@@ -21,6 +21,7 @@
 # Updated: 2025-01-26 - Final fix for dashboard ID undefined - improve form state handling and onChange validation
 # Updated: 2025-01-26 - Add comprehensive debug logs to report page - track form state, API calls, and errors
 # Updated: 2025-01-26 - Dashboard selection fix - use setValue to ensure form state updates, add mode onChange
+# Updated: 2026-01-26 - Trigger: report dashboard select fix (raw API response, dashboard_id)
 
 name: Build and push prebuilt image
 
