@@ -7,6 +7,7 @@
 # Trigger: 2026-01-26 report use all PROPERTY entities per device (no entityIdSet filter).
 # Trigger: 2026-01-26 report only dashboard-selected telemetry (entityIdSet filter + widget scan).
 # Trigger: 2026-01-26 report getHistory + timestamped telemetry list, PDF summary+history tables.
+# Trigger: 2026-01-27 report timestamp unit (s vs ms) fix, chronological sort.
 
 set -e
 WEB_REPO="${WEB_GIT_REPO_URL:-https://github.com/rifatsekerariot/beaver-iot-web.git}"
