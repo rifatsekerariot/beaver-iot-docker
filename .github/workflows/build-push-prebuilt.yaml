@@ -30,6 +30,7 @@
 # Updated: 2026-01-26 - Trigger: report DEVICE_ID-based entity fetch (avoid ENTITY_ID 500)
 # Updated: 2026-01-27 - Trigger: report main_canvas_id fallback + buyuk dashboard_id precision (beaver-iot-web)
 # Updated: 2026-01-27 - CI tetikleme (workflow push)
+# Updated: 2026-01-27 - API: rifatsekerariot/beaver-iot (Alarm backend); Postgres smoke test tek workflow
 
 name: Build and push prebuilt image
 
@@ -103,6 +104,23 @@ jobs:
 
       - name: Verify web image
         run: sh beaver-iot-docker/scripts/verify-web-image.sh
+
+      - name: PostgreSQL stack smoke test (compose up, HTTP check, down)
+        run: |
+          cd beaver-iot-docker/examples
+          BEAVER_IMAGE=milesight/beaver-iot:latest docker compose -f chirpstack-prebuilt-postgres.yaml up -d
+          echo "Waiting 90s for monolith (Java+PostgreSQL, t_alarm migration)..."
+          sleep 90
+          HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9080/ || true)
+          echo "GET http://localhost:9080/ -> $HTTP"
+          if [ "$HTTP" != "200" ] && [ "$HTTP" != "302" ]; then
+            echo "PostgreSQL smoke test failed: expected 200/302, got $HTTP"
+            docker compose -f chirpstack-prebuilt-postgres.yaml logs monolith 2>&1 | tail -80
+            docker compose -f chirpstack-prebuilt-postgres.yaml down -v
+            exit 1
+          fi
+          docker compose -f chirpstack-prebuilt-postgres.yaml down -v
+          echo "PostgreSQL smoke test OK."
 
       - name: Tag and push monolith to GHCR
         run: sh beaver-iot-docker/scripts/tag-push-ghcr.sh
