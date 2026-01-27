@@ -137,3 +137,6 @@ nb-configuration.xml
 ##############################
 .env
 api-build.log
+
+# Caddy: deploy-caddy-postgres.sh tarafindan domain ile uretilir
+examples/Caddyfile

@@ -54,6 +54,16 @@ The script will:
 
 For detailed deployment instructions, see [ZERO_TOUCH_DEPLOY.md](./ZERO_TOUCH_DEPLOY.md).
 
+### Caddy + PostgreSQL (HTTPS, 443)
+
+PostgreSQL + Caddy ile domain uzerinden otomatik HTTPS:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/rifatsekerariot/beaver-iot-docker/main/scripts/deploy-caddy-postgres.sh | sudo sh -s --
+```
+
+Ilk kurulumda domain sorulur; `--domain beaver.example.com` ile de verilebilir. Bkz. [CADDY_POSTGRES_DEPLOY.md](./CADDY_POSTGRES_DEPLOY.md).
+
 ## Build from Source
 
 ### Preparations
