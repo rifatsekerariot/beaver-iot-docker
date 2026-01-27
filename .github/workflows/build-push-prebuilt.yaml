@@ -29,6 +29,7 @@
 # Updated: 2026-01-26 - Trigger: auth autocomplete, report entity fetch (widgets, getList fallback, robust parse)
 # Updated: 2026-01-26 - Trigger: report DEVICE_ID-based entity fetch (avoid ENTITY_ID 500)
 # Updated: 2026-01-27 - Trigger: report main_canvas_id fallback + buyuk dashboard_id precision (beaver-iot-web)
+# Updated: 2026-01-27 - CI tetikleme (workflow push)
 
 name: Build and push prebuilt image
 
