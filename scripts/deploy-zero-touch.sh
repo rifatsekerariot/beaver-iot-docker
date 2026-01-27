@@ -1,11 +1,13 @@
 #!/bin/sh
 # Zero-touch deploy: Beaver IoT + ChirpStack v4 on a Linux server.
 # Linux only. Usage:
-#   curl -sSL https://raw.githubusercontent.com/rifatsekerariot/beaver-iot-docker/main/scripts/deploy-zero-touch.sh | sudo sh -s -- [--tenant-id ID] [--workspace DIR] [--skip-docker-install] [--build-images] [--web-repo URL] [--web-branch BRANCH]
+#   curl -sSL .../deploy-zero-touch.sh | sudo sh -s -- [--tenant-id ID] [--workspace DIR] [--skip-docker-install] [--build-images] [--postgres] [--postgres-password PWD] [--web-repo URL] [--web-branch BRANCH]
 #   ./deploy-zero-touch.sh [options]
 #
 # --build-images: Build api/web/monolith from source (WEB from your fork). Use for live-server
 #   testing with Alarm/Map/DeviceList widgets. Omitting uses prebuilt image (pull); no JAR build.
+# --postgres: Use PostgreSQL instead of H2 (chirpstack-prebuilt-postgres.yaml).
+# --postgres-password PWD: Set POSTGRES_PASSWORD (default: postgres).
 
 set -e
 
@@ -20,6 +22,8 @@ WORKSPACE="${WORKSPACE:-/opt/beaver-chirpstack}"
 TENANT_ID=""
 SKIP_DOCKER_INSTALL=""
 BUILD_IMAGES=""
+USE_POSTGRES=""
+POSTGRES_PWD=""
 
 # POSIX-friendly option parsing
 while [ $# -gt 0 ]; do
@@ -47,6 +51,18 @@ while [ $# -gt 0 ]; do
     --build-images)
       BUILD_IMAGES=1
       shift
+      ;;
+    --postgres)
+      USE_POSTGRES=1
+      shift
+      ;;
+    --postgres-password)
+      if [ $# -lt 2 ]; then
+        echo "[zero-touch] --postgres-password requires a value"
+        exit 1
+      fi
+      POSTGRES_PWD="$2"
+      shift 2
       ;;
     --web-repo)
       if [ $# -lt 2 ]; then
@@ -77,6 +93,9 @@ export CHIRPSTACK_DEFAULT_TENANT_ID="${TENANT_ID:-default}"
 echo "[zero-touch] Linux zero-touch deploy: Beaver IoT + ChirpStack v4"
 echo "[zero-touch] Workspace: $WORKSPACE"
 echo "[zero-touch] Tenant ID:  ${TENANT_ID:-default (use --tenant-id to override)}"
+if [ -n "$USE_POSTGRES" ]; then
+  echo "[zero-touch] Database: PostgreSQL (chirpstack-prebuilt-postgres.yaml)"
+fi
 if [ -n "$BUILD_IMAGES" ]; then
   echo "[zero-touch] Build images: yes (api=$REPO_API $REPO_API_BRANCH, web=$REPO_WEB $REPO_WEB_BRANCH)"
 else
@@ -220,12 +239,22 @@ if [ -n "$BUILD_IMAGES" ]; then
 fi
 
 # --- Compose up ---
-if [ -n "$BUILD_IMAGES" ]; then
-  export BEAVER_IMAGE="milesight/beaver-iot:latest"
-  COMPOSE_FILE="chirpstack.yaml"
+if [ -n "$USE_POSTGRES" ]; then
+  COMPOSE_FILE="chirpstack-prebuilt-postgres.yaml"
+  if [ -n "$BUILD_IMAGES" ]; then
+    export BEAVER_IMAGE="milesight/monolith:latest"
+  else
+    export BEAVER_IMAGE="${BEAVER_IMAGE:-ghcr.io/rifatsekerariot/beaver-iot:latest}"
+  fi
+  [ -n "$POSTGRES_PWD" ] && export POSTGRES_PASSWORD="$POSTGRES_PWD"
 else
-  export BEAVER_IMAGE="${BEAVER_IMAGE:-ghcr.io/rifatsekerariot/beaver-iot:latest}"
-  COMPOSE_FILE="chirpstack-prebuilt.yaml"
+  if [ -n "$BUILD_IMAGES" ]; then
+    export BEAVER_IMAGE="milesight/beaver-iot:latest"
+    COMPOSE_FILE="chirpstack.yaml"
+  else
+    export BEAVER_IMAGE="${BEAVER_IMAGE:-ghcr.io/rifatsekerariot/beaver-iot:latest}"
+    COMPOSE_FILE="chirpstack-prebuilt.yaml"
+  fi
 fi
 echo "[zero-touch] Starting Beaver IoT + ChirpStack stack (image: $BEAVER_IMAGE, compose: $COMPOSE_FILE)..."
 cd "$WORKSPACE/beaver-iot-docker/examples"

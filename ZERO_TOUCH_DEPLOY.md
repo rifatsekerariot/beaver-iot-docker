@@ -78,6 +78,14 @@ curl -sSL https://raw.githubusercontent.com/rifatsekerariot/beaver-iot-docker/ma
 
 Bu komut api/web/monolith'ı build eder (WEB = rifatsekerariot/beaver-iot-web). **15–25 dakika** sürebilir. Tek komut, zero touch; kurulum sonrası UI `http://<sunucu>:9080` üzerinden erişilir.
 
+**PostgreSQL ile (H2 yerine):**
+
+```bash
+curl -sSL https://raw.githubusercontent.com/rifatsekerariot/beaver-iot-docker/main/scripts/deploy-zero-touch.sh | sudo sh -s -- --tenant-id "default" --postgres
+```
+
+Opsiyonel: `--postgres-password "mypwd"`. JAR build yok; `chirpstack-prebuilt-postgres.yaml` ile PostgreSQL + monolith ayağa kalkar.
+
 ---
 
 ## Script ne yapar?
@@ -100,6 +108,8 @@ Bu komut api/web/monolith'ı build eder (WEB = rifatsekerariot/beaver-iot-web). 
 | `--workspace /opt/beaver` | Klonlama ve compose’un çalışacağı dizin. |
 | `--skip-docker-install` | Docker kurma; zaten kuruluysa kullan. |
 | `--build-images` | api/web/monolith'ı kaynaktan build et (WEB = fork). **Canlı sunucu test** için kullanın; 15–25 dk sürebilir. Varsayılan: kapalı. |
+| `--postgres` | H2 yerine **PostgreSQL** kullan (`chirpstack-prebuilt-postgres.yaml`). |
+| `--postgres-password PWD` | `POSTGRES_PASSWORD` (varsayılan: postgres). |
 | `--web-repo URL` | Web repo URL (`--build-images` ile). Varsayılan: rifatsekerariot/beaver-iot-web. |
 | `--web-branch BRANCH` | Web branch (`--build-images` ile). Varsayılan: `origin/main`. |
 
@@ -115,6 +125,7 @@ Bu komut api/web/monolith'ı build eder (WEB = rifatsekerariot/beaver-iot-web). 
 | `REPO_API` | API (beaver-iot) repo URL (`--build-images` ile; varsayılan: Milesight-IoT/beaver-iot). |
 | `REPO_API_BRANCH` | API branch (`--build-images` ile; varsayılan: `origin/release`). |
 | `BEAVER_IMAGE` | Monolith image (varsayılan: ghcr.io/rifatsekerariot/beaver-iot:latest). Override ile farklı image kullanılabilir. |
+| `POSTGRES_PASSWORD` | `--postgres` ile; varsayılan: postgres. |
 
 ---
 
@@ -125,6 +136,33 @@ Bu komut api/web/monolith'ı build eder (WEB = rifatsekerariot/beaver-iot-web). 
 - **Log:** `docker logs -f beaver-iot`
 - **Test:** `curl` ile webhook’a POST veya `scripts/test-webhook.ps1` başka bir makineden (Windows) çalıştırılabilir; sunucu tarafı sadece Linux.
 - **Cihaz ekleme:** Webhook’tan gelen cihazlar için önce Beaver’da kayıt gerekir: **Device → Add → ChirpStack HTTP** → Device Name + **External Device ID (DevEUI)** (ChirpStack’teki DevEUI ile aynı) → Confirm. Ayrıntı: `CHIRPSTACK_BAGLANTI_VE_CALISTIRMA.md` (integrations repo).
+
+---
+
+## Windows: PostgreSQL ile lokal test (Docker)
+
+**Sadece Windows'ta**, H2 yerine **PostgreSQL** ile stack'i lokal Docker'da ayağa kaldırmak için:
+
+1. **Docker Desktop** ve **Git** kurulu olsun.
+2. **beaver-iot-docker** içinde:
+   ```powershell
+   .\scripts\deploy-zero-touch.ps1 -Postgres
+   ```
+   Opsiyonel: `-PostgresPassword "mypwd"`, `-TenantId "default"`.
+3. Bu mod **JAR build yapmaz**; sadece `beaver-iot-docker` klonlar, `chirpstack-prebuilt-postgres.yaml` ile `pull` + `up -d` (PostgreSQL + monolith prebuilt imaj).
+4. Doğrulama (frontend/backend/DB):
+   ```powershell
+   .\scripts\verify-postgres-stack.ps1
+   ```
+   `verify-postgres-stack.ps1`: `beaver-iot-postgresql` ve `beaver-iot` konteynerlerini kontrol eder, `http://localhost:9080` için 200 bekler (en fazla 90 sn).
+
+**Mevcut `beaver-iot-docker` ile (klonlama yok, lokal test):**
+   ```powershell
+   .\scripts\deploy-zero-touch.ps1 -Postgres -UseLocalDockerRepo
+   ```
+
+- **UI:** http://localhost:9080  
+- **Veritabanı:** PostgreSQL, volume `beaver-postgres-data`.
 
 ---
 
