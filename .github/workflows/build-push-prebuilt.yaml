@@ -31,6 +31,7 @@
 # Updated: 2026-01-27 - Trigger: report main_canvas_id fallback + buyuk dashboard_id precision (beaver-iot-web)
 # Updated: 2026-01-27 - CI tetikleme (workflow push)
 # Updated: 2026-01-27 - API: rifatsekerariot/beaver-iot (Alarm backend); Postgres smoke test tek workflow
+# Updated: 2026-01-27 - Trigger: beaver-iot-web alarm TS fix (OperateAlarmRuleModal, AlarmList) push sonrasi CI
 
 name: Build and push prebuilt image
 
