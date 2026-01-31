@@ -13,7 +13,7 @@ WORKDIR /beaver-iot-api
 RUN git checkout ${API_GIT_BRANCH} && mvn package -U -Dmaven.repo.local=.m2/repository -P${API_MVN_PROFILE} -Dsnapshot-repository-id=${API_MVN_SNAPSHOT_REPO_ID} -Dsnapshot-repository-url=${API_MVN_SNAPSHOT_REPO_URL} -DskipTests -am -pl application/application-standard
 
 
-FROM amazoncorretto:17-alpine3.20-jdk AS api
+FROM amazoncorretto:25-alpine3.20-jdk AS api
 COPY --from=api-builder /beaver-iot-api/application/application-standard/target/application-standard-exec.jar /application.jar
 COPY default_local_blueprint.zip* /
 
